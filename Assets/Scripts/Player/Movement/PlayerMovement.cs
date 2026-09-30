@@ -44,7 +44,13 @@ public class PlayerMovement : MonoBehaviour
     public float groundPoundSpeed = 35f;
     public float groundPoundHorizontalBrake = 60f;  // cuán rápido se cancela la velocidad horizontal
     public float bounceWindow = 0.5f;               // tiempo tras aterrizar para hacer el bounce
-    public float bounceJumpHeight = 5f;
+    [Tooltip("Altura del bounce = altura de caída del ground pound x este valor. " +
+             "<1 pierdes altura al encadenar, =1 te mantienes, >1 ganas altura.")]
+    public float bounceHeightMultiplier = 0.9f;
+    [Tooltip("Altura mínima del bounce (para caídas muy cortas).")]
+    public float minBounceHeight = 2f;
+    [Tooltip("Altura máxima del bounce. 0 = sin límite.")]
+    public float maxBounceHeight = 0f;
 
     [Header("Wall Cling / Wall Jump")]
     public LayerMask wallMask;
@@ -79,6 +85,8 @@ public class PlayerMovement : MonoBehaviour
     private float airControlLockedUntil;
     private Vector3 dashVelocity;
     private Vector3 wallNormal;
+    private float poundStartY;      // altura a la que empezó el ground pound
+    private float pendingBounceHeight;  // altura del bounce calculada al aterrizar
 
     private bool JumpPressed => Time.time <= jumpBufferedUntil;
 
@@ -168,6 +176,7 @@ public class PlayerMovement : MonoBehaviour
                 break;
 
             case State.GroundPound:
+                poundStartY = rb.position.y;
                 rb.useGravity = false;
                 break;
 
@@ -265,7 +274,7 @@ public class PlayerMovement : MonoBehaviour
         // Ground pound bounce: salto pulsado poco después de aterrizar de un ground pound
         if (isGrounded && Time.time - lastPoundLandTime <= bounceWindow)
         {
-            height = bounceJumpHeight;
+            height = pendingBounceHeight;
             lastPoundLandTime = -10f;
         }
 
@@ -322,6 +331,12 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.linearVelocity = Vector3.zero;
             lastPoundLandTime = Time.time;
+
+            float fallHeight = Mathf.Max(poundStartY - rb.position.y, 0f);
+            float bounce = Mathf.Max(fallHeight * bounceHeightMultiplier, minBounceHeight);
+            if (maxBounceHeight > 0f) bounce = Mathf.Min(bounce, maxBounceHeight);
+            pendingBounceHeight = bounce;
+
             ChangeState(State.Grounded);
             return;
         }

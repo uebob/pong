@@ -224,13 +224,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 171642202}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.62551, y: 0.2, z: 5.09}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalRotation: {x: -0.38576698, y: -0, z: -0, w: 0.9225963}
+  m_LocalPosition: {x: 12.37, y: 7.01, z: 12.91}
+  m_LocalScale: {x: 16.2036, y: 2, z: 27.796}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -45.383, y: 0, z: 0}
 --- !u!1 &341504881
 GameObject:
   m_ObjectHideFlags: 0
@@ -337,8 +337,8 @@ Transform:
   m_GameObject: {fileID: 341504881}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.06, y: 0.88, z: 1.78}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalPosition: {x: -10.2282, y: 1.5847, z: -3.05}
+  m_LocalScale: {x: 4.9764, y: 3.4094, z: 6.4784}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1067,8 +1067,10 @@ MonoBehaviour:
   groundPoundKey: 306
   groundPoundSpeed: 35
   groundPoundHorizontalBrake: 60
-  bounceWindow: 0.5
-  bounceJumpHeight: 5
+  bounceWindow: 0.2
+  bounceHeightMultiplier: 1.2
+  minBounceHeight: 3
+  maxBounceHeight: 0
   wallMask:
     serializedVersion: 2
     m_Bits: 256
