@@ -2,13 +2,13 @@ using UnityEngine;
 
 /// <summary>
 /// Movimiento con Rigidbody y máquina de estados.
-/// Estados: Grounded, Airborne, Dashing, GroundPound, WallCling.
+/// Estados: Grounded, Airborne, Dashing, GroundPound, WallCling, Sliding.
 /// Requiere un Collider (idealmente cápsula con Physic Material de fricción 0).
 /// </summary>
 [RequireComponent(typeof(Rigidbody), typeof(Collider))]
 public class PlayerMovement : MonoBehaviour
 {
-    public enum State { Grounded, Airborne, Dashing, GroundPound, WallCling }
+    public enum State { Grounded, Airborne, Dashing, GroundPound, WallCling, Sliding }
 
     [Header("Referencias")]
     [Tooltip("Cámara de referencia para el movimiento y el dash. Si está vacío usa Camera.main.")]
@@ -62,6 +62,18 @@ public class PlayerMovement : MonoBehaviour
     public float wallJumpControlLock = 0.2f;        // tiempo sin control aéreo tras un walljump
     public bool wallJumpRefillsJumps = true;
 
+    [Header("Slide en rampas (tras ground pound)")]
+    [Tooltip("Inclinación mínima (grados) para considerar el suelo una rampa.")]
+    public float minSlideAngle = 15f;
+    [Tooltip("Velocidad mínima con la que empieza el slide.")]
+    public float slideMinEntrySpeed = 10f;
+    [Tooltip("Multiplica la velocidad de entrada (la que sale de convertir la caída en velocidad a lo largo de la rampa).")]
+    public float slideEntrySpeedMultiplier = 1f;
+    [Tooltip("Aceleración extra cuesta abajo, además de la gravedad.")]
+    public float slideExtraAcceleration = 10f;
+    [Tooltip("Por debajo de esta velocidad el slide termina.")]
+    public float slideExitSpeed = 2f;
+
     public State CurrentState => state;
 
     // --- Internos ---
@@ -87,6 +99,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 wallNormal;
     private float poundStartY;      // altura a la que empezó el ground pound
     private float pendingBounceHeight;  // altura del bounce calculada al aterrizar
+    private Vector3 slideNormal = Vector3.up;
 
     private bool JumpPressed => Time.time <= jumpBufferedUntil;
 
@@ -126,6 +139,7 @@ public class PlayerMovement : MonoBehaviour
             case State.Dashing:     TickDashing();     break;
             case State.GroundPound: TickGroundPound(); break;
             case State.WallCling:   TickWallCling();   break;
+            case State.Sliding:     TickSliding();     break;
         }
 
         dashQueued = false;
@@ -178,6 +192,11 @@ public class PlayerMovement : MonoBehaviour
             case State.GroundPound:
                 poundStartY = rb.position.y;
                 rb.useGravity = false;
+                break;
+
+            case State.Sliding:
+                RefreshGroundResources(); // estás en el suelo: recuperas saltos y dash
+                rb.useGravity = false;    // la gravedad se aplica a mano a lo largo de la rampa
                 break;
 
             case State.WallCling:
@@ -329,6 +348,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isGrounded)
         {
+            Vector3 impactVelocity = rb.linearVelocity;
             rb.linearVelocity = Vector3.zero;
             lastPoundLandTime = Time.time;
 
@@ -337,6 +357,18 @@ public class PlayerMovement : MonoBehaviour
             if (maxBounceHeight > 0f) bounce = Mathf.Min(bounce, maxBounceHeight);
             pendingBounceHeight = bounce;
 
+            // ¿Rampa? -> slide en lugar de quedarse parado
+            if (GetGroundNormal(out Vector3 n) && Vector3.Angle(n, Vector3.up) >= minSlideAngle)
+            {
+                slideNormal = n;
+                Vector3 downhill = Vector3.ProjectOnPlane(Vector3.down, n).normalized;
+                // La caída se convierte en velocidad a lo largo de la rampa
+                float entry = Vector3.ProjectOnPlane(impactVelocity, n).magnitude * slideEntrySpeedMultiplier;
+                rb.linearVelocity = downhill * Mathf.Max(entry, slideMinEntrySpeed);
+                ChangeState(State.Sliding);
+                return;
+            }
+
             ChangeState(State.Grounded);
             return;
         }
@@ -344,6 +376,48 @@ public class PlayerMovement : MonoBehaviour
         // Cancela la velocidad horizontal de forma progresiva y cae a velocidad constante
         Vector3 flat = Vector3.MoveTowards(FlatVelocity(), Vector3.zero, groundPoundHorizontalBrake * Time.fixedDeltaTime);
         rb.linearVelocity = new Vector3(flat.x, -groundPoundSpeed, flat.z);
+    }
+
+    // ------------------------------------------------------------------- SLIDING
+    void TickSliding()
+    {
+        // Se acaba la rampa (o saltamos de ella): conservamos la velocidad en el aire
+        if (!isGrounded)
+        {
+            preserveMomentum = true;
+            ChangeState(State.Airborne);
+            return;
+        }
+
+        if (TryStartDash()) return;
+
+        // Saltar durante el slide conserva la velocidad, igual que en el dash
+        if (JumpPressed && jumpsRemaining > 0)
+        {
+            preserveMomentum = true;
+            TryJump();
+            return;
+        }
+
+        if (GetGroundNormal(out Vector3 n)) slideNormal = n;
+
+        Vector3 vel = rb.linearVelocity;
+        bool flatGround = Vector3.Angle(slideNormal, Vector3.up) < minSlideAngle;
+
+        if (flatGround || vel.magnitude < slideExitSpeed)
+        {
+            // Suelo plano: la velocidad se redirige al plano horizontal y GroundMove la frena
+            Vector3 flat = new Vector3(vel.x, 0f, vel.z);
+            rb.linearVelocity = flat.sqrMagnitude > 0.001f ? flat.normalized * vel.magnitude : Vector3.zero;
+            ChangeState(State.Grounded);
+            return;
+        }
+
+        // Gravedad a lo largo de la rampa + aceleración extra cuesta abajo
+        Vector3 downhill = Vector3.ProjectOnPlane(Vector3.down, slideNormal).normalized;
+        vel += Vector3.ProjectOnPlane(Physics.gravity, slideNormal) * Time.fixedDeltaTime;
+        vel += downhill * slideExtraAcceleration * Time.fixedDeltaTime;
+        rb.linearVelocity = Vector3.ProjectOnPlane(vel, slideNormal); // pegado a la superficie
     }
 
     // ---------------------------------------------------------------- WALL CLING
@@ -415,6 +489,18 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // ----------------------------------------------------------------- UTILIDADES
+    bool GetGroundNormal(out Vector3 normal)
+    {
+        normal = Vector3.up;
+        Vector3 origin = groundCheck.position + Vector3.up * 0.1f;
+        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, groundDistance + 0.5f, groundMask, QueryTriggerInteraction.Ignore))
+        {
+            normal = hit.normal;
+            return true;
+        }
+        return false;
+    }
+
     Vector3 FlatVelocity()
     {
         Vector3 vel = rb.linearVelocity;

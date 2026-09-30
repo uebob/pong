@@ -1067,7 +1067,7 @@ MonoBehaviour:
   groundPoundKey: 306
   groundPoundSpeed: 35
   groundPoundHorizontalBrake: 60
-  bounceWindow: 0.2
+  bounceWindow: 0.3
   bounceHeightMultiplier: 1.2
   minBounceHeight: 3
   maxBounceHeight: 0
@@ -1081,6 +1081,11 @@ MonoBehaviour:
   wallJumpHeight: 1.6
   wallJumpControlLock: 0.2
   wallJumpRefillsJumps: 1
+  minSlideAngle: 15
+  slideMinEntrySpeed: 10
+  slideEntrySpeedMultiplier: 1
+  slideExtraAcceleration: 10
+  slideExitSpeed: 2
 --- !u!114 &1793468646
 MonoBehaviour:
   m_ObjectHideFlags: 0
