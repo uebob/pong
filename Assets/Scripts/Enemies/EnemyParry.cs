@@ -2,8 +2,8 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// El enemigo parrea automáticamente cualquier PongProjectile que entre en su radio,
-/// devolviéndolo por donde vino (dirección opuesta a su velocidad).
+/// El enemigo parrea automáticamente los PongProjectile que lo tienen como objetivo
+/// y entran en su radio, devolviéndolos por donde vinieron (dirección opuesta a su velocidad).
 /// La detección filtra por layer (LayerMask); lo que cuenta es que el objeto tenga PongProjectile.
 /// </summary>
 public class EnemyParry : MonoBehaviour
@@ -18,10 +18,6 @@ public class EnemyParry : MonoBehaviour
     [Header("Parry")]
     [Tooltip("Tiempo mínimo entre parries (s).")]
     [SerializeField] private float parryCooldown = 0.5f;
-    [Tooltip("Solo parrea pongs que se acercan a él (ignora los que se alejan o pasan de largo).")]
-    [SerializeField] private bool onlyApproaching = true;
-    [Tooltip("Evita parrear sus propios disparos recién lanzados (los suyos solo cuentan si alguien ya los parreó).")]
-    [SerializeField] private bool ignoreOwnFreshProjectiles = true;
 
     public event Action<PongProjectile> Parried;
 
@@ -43,17 +39,13 @@ public class EnemyParry : MonoBehaviour
             var projectile = hits[i].GetComponentInParent<PongProjectile>();
             if (projectile == null || !projectile.CanBeParried) continue;
 
-            if (ignoreOwnFreshProjectiles && projectile.Owner == gameObject && projectile.ParryCount == 0)
-                continue;
+            // Solo los proyectiles que me tienen a mí como objetivo.
+            if (!IsMyTarget(projectile.Target)) continue;
 
             if (!projectile.TryGetComponent(out Rigidbody projectileBody)) continue;
 
             Vector3 incoming = projectileBody.linearVelocity;
             if (incoming.sqrMagnitude < 0.01f) continue;
-
-            // ¿Se acerca? (su velocidad apunta hacia nosotros)
-            if (onlyApproaching && Vector3.Dot(incoming, Center - projectile.transform.position) <= 0f)
-                continue;
 
             // Lo devolvemos por donde vino.
             if (projectile.Parry(-incoming.normalized))
@@ -64,6 +56,12 @@ public class EnemyParry : MonoBehaviour
                 break; // un parry por activación
             }
         }
+    }
+
+    /// <summary>El target puede ser este objeto o uno de sus hijos (collider, punto de impacto...).</summary>
+    private bool IsMyTarget(Transform target)
+    {
+        return target != null && (target == transform || target.IsChildOf(transform));
     }
 
     private void OnDrawGizmosSelected()

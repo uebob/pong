@@ -6,7 +6,7 @@ using UnityEngine;
 /// Proyectil teledirigido (Rigidbody, Unity 6) con:
 /// - Estadísticas resueltas (definición + pasivos del dueño) en Stats.
 /// - Behaviors modulares (innatos + concedidos por pasivos).
-/// - Owner + Faction: quién lo lanzó. Se fijan al crearlo y NO cambian nunca
+/// - Owner + Faction: quién lo lanzó.
 ///   (parrearlo no lo cambia de dueño). Solo el dueño puede guardarlo.
 /// - Target propio: lo elige el propio pong. Al lanzarse según su facción; tras un parry,
 ///   al terminar la recuperación: enemigo más cercano o, si no hay, el jugador.
