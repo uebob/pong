@@ -19,7 +19,7 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: 90c1332e472da3f4eb36da83805bdd8b, type: 2}
   baseStats:
   - stat: 0
-    value: 15
+    value: 20
   - stat: 1
     value: 40
   - stat: 2
@@ -27,7 +27,7 @@ MonoBehaviour:
   - stat: 3
     value: 2
   - stat: 4
-    value: 200
+    value: 250
   - stat: 5
     value: 10
   innateBehaviors: []

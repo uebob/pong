@@ -27,6 +27,7 @@ public class PlayerMovement : MonoBehaviour
     public int maxJumps = 2;
     public float jumpHeight = 1.6f;
     public float jumpBufferTime = 0.1f;
+    public AudioClip jumpSoundEffect;
 
     [Header("Detección de suelo")]
     public float groundDistance = 0.3f;
@@ -38,6 +39,7 @@ public class PlayerMovement : MonoBehaviour
     public float dashDuration = 0.18f;
     public float dashCooldown = 0.4f;
     public int maxAirDashes = 1;
+    public AudioClip dashSoundEffect;
 
     [Header("Ground Pound")]
     public KeyCode groundPoundKey = KeyCode.LeftControl;
@@ -51,6 +53,8 @@ public class PlayerMovement : MonoBehaviour
     public float minBounceHeight = 2f;
     [Tooltip("Altura máxima del bounce. 0 = sin límite.")]
     public float maxBounceHeight = 0f;
+    public AudioClip startGroundPoundSoundEffect;
+    public AudioClip groundPoundSoundEffect;
 
     [Header("Wall Cling / Wall Jump")]
     public LayerMask wallMask;
@@ -100,6 +104,7 @@ public class PlayerMovement : MonoBehaviour
     private float poundStartY;      // altura a la que empezó el ground pound
     private float pendingBounceHeight;  // altura del bounce calculada al aterrizar
     private Vector3 slideNormal = Vector3.up;
+    private AudioSource audioSource;
 
     private bool JumpPressed => Time.time <= jumpBufferedUntil;
 
@@ -111,6 +116,7 @@ public class PlayerMovement : MonoBehaviour
         rb.linearDamping = 0f;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic; // el ground pound es rápido
+        audioSource = GetComponent<AudioSource>();
 
         if (cameraTransform == null && Camera.main != null)
             cameraTransform = Camera.main.transform;
@@ -190,6 +196,7 @@ public class PlayerMovement : MonoBehaviour
                 break;
 
             case State.GroundPound:
+                audioSource.PlayOneShot(startGroundPoundSoundEffect);
                 poundStartY = rb.position.y;
                 rb.useGravity = false;
                 break;
@@ -309,6 +316,7 @@ public class PlayerMovement : MonoBehaviour
         rb.linearVelocity = vel;
         lastJumpTime = Time.time;
         jumpBufferedUntil = 0f; // consumir el buffer
+        audioSource.PlayOneShot(jumpSoundEffect);
     }
 
     // -------------------------------------------------------------------- DASH
@@ -318,6 +326,7 @@ public class PlayerMovement : MonoBehaviour
         if (Time.time - lastDashTime < dashDuration + dashCooldown) return false;
         if (!isGrounded && airDashesRemaining <= 0) return false;
 
+        audioSource.PlayOneShot(dashSoundEffect);
         if (!isGrounded) airDashesRemaining--;
         ChangeState(State.Dashing);
         return true;
@@ -369,6 +378,7 @@ public class PlayerMovement : MonoBehaviour
                 return;
             }
 
+            audioSource.PlayOneShot(groundPoundSoundEffect);
             ChangeState(State.Grounded);
             return;
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -7,6 +8,7 @@ using UnityEngine.InputSystem;
 /// Parry con ventana temporal y comprobación de que el pong viene de frente.
 /// Usa PongDetector (radio) y PlayerAim (dirección con aim assist).
 /// Parrear NO cambia el owner del pong; tras la recuperación, el propio pong elige objetivo.
+/// Al parrear el jugador se congela el juego unos instantes (freeze frames).
 /// </summary>
 [RequireComponent(typeof(PongDetector), typeof(PlayerAim))]
 public class PlayerParry : MonoBehaviour
@@ -26,6 +28,15 @@ public class PlayerParry : MonoBehaviour
     [Range(-1f, 1f)]
     [SerializeField] private float minFacingDot = 0f;
 
+    [Header("Freeze frames")]
+    [Tooltip("Duración del congelado al parrear, en tiempo real (s). 0 = desactivado.")]
+    [SerializeField] private float freezeDuration = 0.06f;
+    [Tooltip("Time.timeScale durante el freeze. 0 = congelado total; un valor pequeño (0.05) deja un movimiento mínimo.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float freezeTimeScale = 0f;
+    private AudioSource audioSource;
+    public AudioClip parrySoundEffect;
+
     public event Action ParryStarted;
     public event Action<PongProjectile> ParrySucceeded;
 
@@ -37,14 +48,25 @@ public class PlayerParry : MonoBehaviour
     private float cooldownTimer;
     private int parriedThisWindow;
 
+    // Freeze frames
+    private Coroutine freezeRoutine;
+    private float freezeEndTime;
+    private float timeScaleBeforeFreeze = 1f;
+
     private void Awake()
     {
         detector = GetComponent<PongDetector>();
         aim = GetComponent<PlayerAim>();
+        audioSource = gameObject.GetComponent<AudioSource>();
     }
 
     private void OnEnable() => parryAction.Enable();
-    private void OnDisable() => parryAction.Disable();
+
+    private void OnDisable()
+    {
+        parryAction.Disable();
+        CancelFreeze(); // si no, un freeze a medias dejaría el juego parado
+    }
 
     private void Update()
     {
@@ -83,16 +105,59 @@ public class PlayerParry : MonoBehaviour
 
             if (projectile.Parry(aimDirection))
             {
+                projectile.ChangeFaction(PongFaction.Player);
+
                 ParrySucceeded?.Invoke(projectile);
+                audioSource.PlayOneShot(parrySoundEffect);
+                RequestFreeze();
                 parriedThisWindow++;
 
                 if (parriedThisWindow >= maxProjectilesPerParry)
                 {
                     windowTimer = 0f;
-                    projectile.ChangeFaction(PongFaction.Player);
                     break;
                 }
             }
         }
+    }
+
+    // =====================================================================
+    // Freeze frames
+    // =====================================================================
+
+    /// <summary>
+    /// Congela el juego durante freezeDuration (tiempo real). Si ya hay un freeze activo
+    /// no se apilan: solo se extiende el final si hace falta.
+    /// </summary>
+    private void RequestFreeze()
+    {
+        if (freezeDuration <= 0f) return;
+
+        freezeEndTime = Mathf.Max(freezeEndTime, Time.unscaledTime + freezeDuration);
+
+        if (freezeRoutine == null)
+            freezeRoutine = StartCoroutine(FreezeRoutine());
+    }
+
+    private IEnumerator FreezeRoutine()
+    {
+        timeScaleBeforeFreeze = Time.timeScale;
+        Time.timeScale = freezeTimeScale;
+
+        // Tiempo real: con timeScale = 0 el tiempo escalado no avanza.
+        while (Time.unscaledTime < freezeEndTime)
+            yield return null;
+
+        Time.timeScale = timeScaleBeforeFreeze;
+        freezeRoutine = null;
+    }
+
+    private void CancelFreeze()
+    {
+        if (freezeRoutine == null) return;
+
+        StopCoroutine(freezeRoutine);
+        freezeRoutine = null;
+        Time.timeScale = timeScaleBeforeFreeze;
     }
 }

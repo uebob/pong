@@ -2041,6 +2041,7 @@ GameObject:
   - component: {fileID: 1793468643}
   - component: {fileID: 1793468642}
   - component: {fileID: 1793468641}
+  - component: {fileID: 1793468651}
   - component: {fileID: 1793468645}
   - component: {fileID: 1793468649}
   - component: {fileID: 1793468648}
@@ -2200,6 +2201,7 @@ MonoBehaviour:
   maxJumps: 2
   jumpHeight: 2.5
   jumpBufferTime: 0.1
+  jumpSoundEffect: {fileID: 8300000, guid: bf7d479f978a90f45bb6bcc07c45ea77, type: 3}
   groundDistance: 0.3
   groundMask:
     serializedVersion: 2
@@ -2209,6 +2211,7 @@ MonoBehaviour:
   dashDuration: 0.18
   dashCooldown: 0.4
   maxAirDashes: 1
+  dashSoundEffect: {fileID: 8300000, guid: 2bbf6272c24136c4ca9721f196372367, type: 3}
   groundPoundKey: 306
   groundPoundSpeed: 35
   groundPoundHorizontalBrake: 60
@@ -2216,10 +2219,12 @@ MonoBehaviour:
   bounceHeightMultiplier: 1.2
   minBounceHeight: 5
   maxBounceHeight: 0
+  startGroundPoundSoundEffect: {fileID: 8300000, guid: 53dbb0cca0c99b448829b3b2ad915b64, type: 3}
+  groundPoundSoundEffect: {fileID: 8300000, guid: b7ad79e0ace57cf4aba3d63430af9431, type: 3}
   wallMask:
     serializedVersion: 2
     m_Bits: 256
-  wallCheckDistance: 0.3
+  wallCheckDistance: 0.2
   wallSlideSpeed: 2
   requireInputTowardWall: 0
   wallJumpHorizontalSpeed: 5
@@ -2351,6 +2356,106 @@ MonoBehaviour:
   parryCooldown: 0.4
   maxProjectilesPerParry: 1
   minFacingDot: -0.28
+  freezeDuration: 0.1
+  freezeTimeScale: 0
+  parrySoundEffect: {fileID: 8300000, guid: daf55ebd4ea866543b8c7efc9bb7e052, type: 3}
+--- !u!82 &1793468651
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1793468638}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &1832200798
 GameObject:
   m_ObjectHideFlags: 0

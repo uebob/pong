@@ -48,8 +48,8 @@ MonoBehaviour:
     m_RotationOrder: 4
   closeRange: 4
   closeRangeTurnMultiplier: 1.75
-  hitStopDuration: 0.05
-  homingRecoveryTime: 0.5
+  hitStopDuration: 0
+  homingRecoveryTime: 0.2
   homingRampTime: 0.25
   homingRampCurve:
     serializedVersion: 2
