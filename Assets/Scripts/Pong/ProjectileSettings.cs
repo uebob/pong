@@ -1,29 +1,19 @@
 using UnityEngine;
 
 /// <summary>
-/// Todos los parámetros de "feel" del proyectil en un asset.
-/// Crear con: Assets > Create > Prototype > Projectile Settings
+/// Ajustes de "feel" del movimiento del proyectil (curvas y tiempos).
+/// Las estadísticas numéricas que los pasivos pueden modificar (velocidad, giro,
+/// boost del parry...) ahora viven en PongStat / PongDefinition.baseStats.
+/// Crear con: Assets > Create > Pong > Projectile Settings
 /// </summary>
-[CreateAssetMenu(menuName = "Prototype/Projectile Settings", fileName = "ProjectileSettings")]
+[CreateAssetMenu(menuName = "Pong/Projectile Settings", fileName = "ProjectileSettings")]
 public class ProjectileSettings : ScriptableObject
 {
     [Header("Velocidad")]
-    [Tooltip("Velocidad de crucero base (m/s).")]
-    public float cruiseSpeed = 12f;
-
-    [Tooltip("Cuánto sube la velocidad de crucero con cada parry (m/s).")]
-    public float speedGainPerParry = 2f;
-
-    [Tooltip("Tope de la velocidad de crucero.")]
-    public float maxCruiseSpeed = 30f;
-
     [Tooltip("Con qué rapidez la velocidad se acerca a la objetivo (1/s). Más alto = más brusco.")]
     public float speedSmoothing = 3f;
 
     [Header("Steering")]
-    [Tooltip("Velocidad máxima de giro a pleno homing (grados/s).")]
-    public float turnRate = 200f;
-
     [Tooltip("Multiplicador de velocidad según alineación con el objetivo. " +
              "X: -1 (objetivo detrás) a 1 (objetivo de frente). Y: factor sobre la velocidad de crucero.")]
     public AnimationCurve slowdownByAlignment = new AnimationCurve(
@@ -33,21 +23,25 @@ public class ProjectileSettings : ScriptableObject
 
     [Tooltip("Por debajo de esta distancia al objetivo, el giro se multiplica (evita órbitas).")]
     public float closeRange = 4f;
-
     public float closeRangeTurnMultiplier = 1.75f;
 
     [Header("Parry")]
-    [Tooltip("Velocidad de salida = velocidad de crucero * este multiplicador.")]
-    public float parryBoostMultiplier = 2f;
-
     [Tooltip("Pausa breve (hit-stop) del proyectil al ser parreado (s).")]
     public float hitStopDuration = 0.06f;
 
-    [Tooltip("Tiempo que tarda el homing en recuperarse tras un parry (s).")]
+    [Tooltip("Recuperación tras un parry (s): el pong vuela hacia fuera SIN objetivo ni homing. " +
+             "Al terminar elige objetivo: enemigo más cercano o, si no hay, el jugador.")]
     public float homingRecoveryTime = 0.5f;
 
-    [Tooltip("Curva de recuperación del homing (X: 0-1 del tiempo, Y: 0-1 de fuerza).")]
-    public AnimationCurve homingRecoveryCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [Tooltip("Tiempo que tarda el homing en entrar a pleno tras elegir objetivo (s). 0 = de golpe.")]
+    public float homingRampTime = 0.25f;
+
+    [Tooltip("Curva de entrada del homing (X: 0-1 del tiempo, Y: 0-1 de fuerza).")]
+    public AnimationCurve homingRampCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+    [Header("Objetivo")]
+    [Tooltip("Cada cuánto busca un objetivo nuevo si pierde el actual (s).")]
+    public float retargetInterval = 0.5f;
 
     [Tooltip("Tiempo tras un parry durante el cual no se puede volver a parrear (s).")]
     public float parryLockout = 0.3f;

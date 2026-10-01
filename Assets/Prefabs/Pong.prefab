@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 7641227378543672036}
   m_Layer: 7
   m_Name: Pong
-  m_TagString: Untagged
+  m_TagString: Pong
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -153,6 +153,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26dd7d73487e627479f27a6e135ac817, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PongProjectile
-  settings: {fileID: 11400000, guid: 90c1332e472da3f4eb36da83805bdd8b, type: 2}
+  definition: {fileID: 0}
+  owner: {fileID: 0}
+  faction: 0
   target: {fileID: 0}
   bounceOnCollision: 1

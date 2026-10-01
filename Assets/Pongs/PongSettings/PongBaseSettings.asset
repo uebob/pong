@@ -10,13 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a061f5c2225d37440af8a475ce8163c4, type: 3}
-  m_Name: PongBase
+  m_Name: PongBaseSettings
   m_EditorClassIdentifier: Assembly-CSharp::ProjectileSettings
-  cruiseSpeed: 15
-  speedGainPerParry: 2.5
-  maxCruiseSpeed: 50
   speedSmoothing: 3
-  turnRate: 200
   slowdownByAlignment:
     serializedVersion: 2
     m_Curve:
@@ -52,10 +48,10 @@ MonoBehaviour:
     m_RotationOrder: 4
   closeRange: 4
   closeRangeTurnMultiplier: 1.75
-  parryBoostMultiplier: 2
   hitStopDuration: 0.05
   homingRecoveryTime: 0.5
-  homingRecoveryCurve:
+  homingRampTime: 0.25
+  homingRampCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -79,4 +75,5 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  retargetInterval: 0.5
   parryLockout: 0.2
