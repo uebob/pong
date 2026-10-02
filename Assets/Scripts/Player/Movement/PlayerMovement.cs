@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Movimiento con Rigidbody y máquina de estados.
 /// Estados: Grounded, Airborne, Dashing, GroundPound, WallCling, Sliding.
+/// Acción especial: Batjump (clic contra una superficie cercana, disponible desde cualquier estado).
 /// Requiere un Collider (idealmente cápsula con Physic Material de fricción 0).
 /// </summary>
 [RequireComponent(typeof(Rigidbody), typeof(Collider))]
@@ -11,7 +12,7 @@ public class PlayerMovement : MonoBehaviour
     public enum State { Grounded, Airborne, Dashing, GroundPound, WallCling, Sliding }
 
     [Header("Referencias")]
-    [Tooltip("Cámara de referencia para el movimiento y el dash. Si está vacío usa Camera.main.")]
+    [Tooltip("Cámara de referencia para el movimiento, el dash y el batjump. Si está vacío usa Camera.main.")]
     public Transform cameraTransform;
     public Transform groundCheck;
 
@@ -78,6 +79,32 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("Por debajo de esta velocidad el slide termina.")]
     public float slideExitSpeed = 2f;
 
+    [Header("Batjump")]
+    [Tooltip("Distancia máxima (desde el jugador) a la que puede estar la superficie.")]
+    public float batRange = 3f;
+
+    [Tooltip("Superficies contra las que se puede batear. Si está vacío usa groundMask + wallMask.")]
+    public LayerMask batSurfaceMask;
+
+    [Tooltip("Velocidad mínima de salida perpendicular a la superficie.")]
+    public float batMinSpeed = 12f;
+
+    [Tooltip("Multiplica la velocidad que llevabas al batear.")]
+    public float batSpeedMultiplier = 1f;
+
+    [Tooltip("Velocidad máxima de salida. 0 = sin límite.")]
+    public float batMaxSpeed = 0f;
+
+    [Tooltip("Tiempo sin control aéreo tras el batjump, para que el input no frene el impulso al instante.")]
+    public float batControlLock = 0.15f;
+
+    public float batCooldown = 0.3f;
+    public AudioClip batSoundEffect;
+    public KeyCode batkey = KeyCode.Mouse0;
+
+    /// <summary>Se lanza al hacer batjump: (punto de impacto, normal de la superficie). Útil para animación y FX.</summary>
+    public event System.Action<Vector3, Vector3> BatJumped;
+
     public State CurrentState => state;
 
     // --- Internos ---
@@ -89,7 +116,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 wishDir;        // dirección de input relativa a la cámara (magnitud 0..1)
     private Vector3 camForward;     // forward de la cámara aplanado
     private float jumpBufferedUntil;
-    private bool dashQueued, poundQueued;
+    private bool dashQueued, poundQueued, batQueued;
 
     private bool isGrounded;
     private int jumpsRemaining;
@@ -97,7 +124,7 @@ public class PlayerMovement : MonoBehaviour
     private bool preserveMomentum;  // true = sin recorte de velocidad en el aire
 
     private float stateTimer;
-    private float lastJumpTime = -10f, lastDashTime = -10f, lastPoundLandTime = -10f, lastWallJumpTime = -10f;
+    private float lastJumpTime = -10f, lastDashTime = -10f, lastPoundLandTime = -10f, lastWallJumpTime = -10f, lastBatTime = -10f;
     private float airControlLockedUntil;
     private Vector3 dashVelocity;
     private Vector3 wallNormal;
@@ -131,12 +158,20 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetButtonDown("Jump")) jumpBufferedUntil = Time.time + jumpBufferTime;
         if (Input.GetKeyDown(dashKey)) dashQueued = true;
         if (Input.GetKeyDown(groundPoundKey)) poundQueued = true;
+        if (Input.GetKeyDown(batkey)) batQueued = true;
     }
 
     void FixedUpdate()
     {
         UpdateWishDirection();
         isGrounded = CheckGround();
+
+        // El batjump se puede hacer desde cualquier estado y tiene prioridad sobre el resto
+        if (TryBatJump())
+        {
+            dashQueued = poundQueued = batQueued = false;
+            return;
+        }
 
         switch (state)
         {
@@ -150,6 +185,7 @@ public class PlayerMovement : MonoBehaviour
 
         dashQueued = false;
         poundQueued = false;
+        batQueued = false;
     }
 
     void UpdateWishDirection()
@@ -207,8 +243,11 @@ public class PlayerMovement : MonoBehaviour
                 break;
 
             case State.WallCling:
-                // Anula el movimiento contra la pared
-                rb.linearVelocity = new Vector3(0f, Mathf.Min(rb.linearVelocity.y, 0f), 0f);
+                // Solo se anula la velocidad que empuja contra la pared; el resto se conserva
+                Vector3 clingVel = rb.linearVelocity;
+                float intoWall = Vector3.Dot(clingVel, wallNormal);
+                if (intoWall < 0f) clingVel -= wallNormal * intoWall;
+                rb.linearVelocity = clingVel;
                 break;
         }
     }
@@ -317,6 +356,95 @@ public class PlayerMovement : MonoBehaviour
         lastJumpTime = Time.time;
         jumpBufferedUntil = 0f; // consumir el buffer
         audioSource.PlayOneShot(jumpSoundEffect);
+    }
+
+    // ----------------------------------------------------------------- BATJUMP
+    /// <summary>
+    /// Si hay una superficie al alcance en la dirección de la cámara, toda la velocidad que llevas
+    /// se redirige en sentido contrario a donde mira la cámara. Mirando una pared de frente sales
+    /// perpendicular a ella; mirando al suelo unos metros por delante, sales hacia arriba y hacia atrás.
+    /// </summary>
+    bool TryBatJump()
+    {
+        if (!batQueued || cameraTransform == null) return false;
+        if (Time.time - lastBatTime < batCooldown) return false;
+
+        int mask = batSurfaceMask.value != 0
+            ? batSurfaceMask.value
+            : (groundMask.value | wallMask.value);
+
+        Vector3 center = col.bounds.center;
+        Vector3 origin = cameraTransform.position;
+
+        // La cámara sigue determinando QUÉ superficie estás señalando.
+        // La velocidad del jugador determina CÓMO sales de ella.
+        float rayLength = batRange + Vector3.Distance(origin, center);
+
+        if (!Physics.Raycast(
+                origin,
+                cameraTransform.forward,
+                out RaycastHit hit,
+                rayLength,
+                mask,
+                QueryTriggerInteraction.Ignore))
+        {
+            return false;
+        }
+
+        // El alcance real se sigue midiendo desde el jugador.
+        if (Vector3.Distance(center, hit.point) > batRange)
+            return false;
+
+        Vector3 normal = hit.normal;
+        Vector3 velocity = rb.linearVelocity * batSpeedMultiplier;
+
+        // Separamos la velocidad en:
+        // - componente normal: perpendicular a la superficie
+        // - componente tangencial: paralela a la superficie
+        float normalSpeed = Vector3.Dot(velocity, normal);
+        Vector3 tangentialVelocity = velocity - normal * normalSpeed;
+
+        // Queremos salir de la superficie.
+        //
+        // Si entrábamos en ella:
+        //   normalSpeed < 0 -> se invierte.
+        //
+        // Si ya nos alejábamos:
+        //   normalSpeed > 0 -> conservamos su magnitud.
+        //
+        // Si no había componente normal:
+        //   normalSpeed == 0 -> damos el mínimo impulso.
+        float outgoingNormalSpeed = Mathf.Max(
+            Mathf.Abs(normalSpeed),
+            batMinSpeed
+        );
+
+        Vector3 launchVelocity =
+            tangentialVelocity +
+            normal * outgoingNormalSpeed;
+
+        // Límite opcional de velocidad total.
+        if (batMaxSpeed > 0f && launchVelocity.magnitude > batMaxSpeed)
+        {
+            launchVelocity = launchVelocity.normalized * batMaxSpeed;
+        }
+
+        rb.linearVelocity = launchVelocity;
+
+        preserveMomentum = true;
+        lastBatTime = Time.time;
+        lastJumpTime = Time.time;
+        airControlLockedUntil = Time.time + batControlLock;
+        jumpBufferedUntil = 0f;
+
+        ChangeState(State.Airborne);
+
+        if (audioSource != null && batSoundEffect != null)
+            audioSource.PlayOneShot(batSoundEffect);
+
+        BatJumped?.Invoke(hit.point, hit.normal);
+
+        return true;
     }
 
     // -------------------------------------------------------------------- DASH
@@ -446,9 +574,13 @@ public class PlayerMovement : MonoBehaviour
         }
         wallNormal = n;
 
-        // Descenso lento
+        // Control horizontal como en el aire: puedes desplazarte por la pared o separarte de ella
+        AirMove();
+
+        // Solo se elimina la velocidad contra la pared; el resto se conserva. Descenso lento.
         Vector3 vel = rb.linearVelocity;
-        vel.x = 0f; vel.z = 0f;
+        float into = Vector3.Dot(vel, wallNormal);
+        if (into < 0f) vel -= wallNormal * into;
         vel.y = Mathf.Max(vel.y, -wallSlideSpeed);
         rb.linearVelocity = vel;
     }
@@ -529,5 +661,9 @@ public class PlayerMovement : MonoBehaviour
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(groundCheck.position, groundDistance);
         }
+
+        // Alcance del batjump
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, batRange);
     }
 }
