@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class EnemyHealth : MonoBehaviour
+public class PlayerHealth : MonoBehaviour
 {
     public float health;
     public float maxHealth;
@@ -23,5 +23,4 @@ public class EnemyHealth : MonoBehaviour
     {
         Destroy(gameObject);
     }
-
 }
