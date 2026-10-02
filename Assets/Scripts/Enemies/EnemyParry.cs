@@ -23,8 +23,14 @@ public class EnemyParry : MonoBehaviour
 
     private readonly Collider[] hits = new Collider[16];
     private float nextParryTime;
+    private EnemyHealth health;
 
     private Vector3 Center => center != null ? center.position : transform.position;
+
+    void Awake()
+    {
+        health = gameObject.GetComponent<EnemyHealth>();
+    }
 
     // Los pongs se mueven en FixedUpdate, así que consultamos en el mismo ciclo.
     private void FixedUpdate()
@@ -44,6 +50,8 @@ public class EnemyParry : MonoBehaviour
 
             if (!projectile.TryGetComponent(out Rigidbody projectileBody)) continue;
 
+            health.TakeDamage(projectile.speed);
+
             Vector3 incoming = projectileBody.linearVelocity;
             if (incoming.sqrMagnitude < 0.01f) continue;
 
@@ -53,6 +61,7 @@ public class EnemyParry : MonoBehaviour
                 nextParryTime = Time.time + parryCooldown;
                 Parried?.Invoke(projectile);
                 projectile.ChangeFaction(PongFaction.Enemy);
+
                 break; // un parry por activación
             }
         }

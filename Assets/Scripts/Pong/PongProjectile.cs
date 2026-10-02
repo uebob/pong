@@ -76,7 +76,7 @@ public class PongProjectile : MonoBehaviour
     private bool hasLaunched;
 
     private Vector3 direction;
-    private float speed;
+    public float speed;
 
     // homing / recuperación
     private bool recovering;
