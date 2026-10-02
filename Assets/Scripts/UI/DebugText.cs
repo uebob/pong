@@ -21,13 +21,11 @@ public class DebugText : MonoBehaviour
     void Update()
     {
         float speed = Mathf.Round(rb.linearVelocity.magnitude * 100f) / 100f;
-        float xspeed = Mathf.Round(rb.linearVelocity.x * 100f) / 100f;
         float yspeed = Mathf.Round(rb.linearVelocity.y * 100f) / 100f;
         if (Mathf.Abs(speed) < 0.01f) speed = 0;
-        if (Mathf.Abs(xspeed) < 0.01f) xspeed = 0;
         if (Mathf.Abs(yspeed) < 0.01f) yspeed = 0;
 
-        playerStatsText.text = "health: " + playerHealth.health + "\n speed: " + speed + "\n x speed: " + Mathf.Abs(xspeed) + "\n y speed: " + yspeed;
+        playerStatsText.text = "health: " + playerHealth.health + "\n speed: " + speed + "\n y speed: " + yspeed;
 
         pongsText.text = "Pongs:\n";
         foreach (var pong in inventory.queue)

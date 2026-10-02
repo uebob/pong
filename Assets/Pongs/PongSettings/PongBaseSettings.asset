@@ -46,8 +46,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  closeRange: 5
-  closeRangeTurnMultiplier: 2
+  closeRange: 8
+  closeRangeTurnMultiplier: 4
   hitStopDuration: 0
   homingRecoveryTime: 0
   homingRampTime: 0.25
