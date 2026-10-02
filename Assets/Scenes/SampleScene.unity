@@ -2930,7 +2930,7 @@ MonoBehaviour:
   slideEntrySpeedMultiplier: 1.5
   slideExtraAcceleration: 10
   slideExitSpeed: 2
-  batRange: 3
+  batRange: 6
   batSurfaceMask:
     serializedVersion: 2
     m_Bits: 0
