@@ -42,7 +42,7 @@ public class PongInventory : MonoBehaviour
     public IReadOnlyList<PongProjectile> Items => queue;
     public PongProjectile Next => queue.Count > 0 ? queue[0] : null;
 
-    private readonly List<PongProjectile> queue = new List<PongProjectile>();
+    public readonly List<PongProjectile> queue = new List<PongProjectile>();
     private readonly List<PongProjectile> nearby = new List<PongProjectile>(16);
 
     private PongDetector detector;

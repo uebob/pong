@@ -19,7 +19,7 @@ public class PlayerParry : MonoBehaviour
 
     [Header("Parry")]
     [Tooltip("Tiempo que la ventana de parry permanece activa tras pulsar (s).")]
-    [SerializeField] private float parryWindow = 0.2f;
+    [SerializeField] public float parryWindow = 0.2f;
     [Tooltip("Tiempo mínimo entre pulsaciones (s).")]
     [SerializeField] private float parryCooldown = 0.4f;
     [Tooltip("Proyectiles máximos por pulsación.")]
