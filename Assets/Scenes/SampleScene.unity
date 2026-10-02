@@ -2911,7 +2911,7 @@ MonoBehaviour:
   groundPoundHorizontalBrake: 60
   bounceWindow: 0.35
   bounceHeightMultiplier: 1.2
-  minBounceHeight: 5
+  minBounceHeight: 7
   maxBounceHeight: 0
   startGroundPoundSoundEffect: {fileID: 8300000, guid: 53dbb0cca0c99b448829b3b2ad915b64, type: 3}
   groundPoundSoundEffect: {fileID: 8300000, guid: 4ed6df487ca65984ca884e3aa4909e16, type: 3}
@@ -2930,17 +2930,19 @@ MonoBehaviour:
   slideEntrySpeedMultiplier: 1.5
   slideExtraAcceleration: 10
   slideExitSpeed: 2
+  batkey: 323
   batRange: 6
   batSurfaceMask:
     serializedVersion: 2
     m_Bits: 0
+  batNormalBlend: 0
   batMinSpeed: 12
   batSpeedMultiplier: 1
   batMaxSpeed: 0
-  batControlLock: 0.15
+  batMaxUpwardSpeed: 15
   batCooldown: 0.3
+  batControlLock: 0.15
   batSoundEffect: {fileID: 8300000, guid: 7a4345656db505c4b931ff27c0c22fbc, type: 3}
-  batkey: 323
 --- !u!114 &1793468647
 MonoBehaviour:
   m_ObjectHideFlags: 0
