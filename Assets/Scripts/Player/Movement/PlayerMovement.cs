@@ -80,27 +80,27 @@ public class PlayerMovement : MonoBehaviour
     public float slideExitSpeed = 2f;
 
     [Header("Batjump")]
+    public KeyCode batkey = KeyCode.Mouse0;
     [Tooltip("Distancia máxima (desde el jugador) a la que puede estar la superficie.")]
     public float batRange = 3f;
-
     [Tooltip("Superficies contra las que se puede batear. Si está vacío usa groundMask + wallMask.")]
     public LayerMask batSurfaceMask;
-
-    [Tooltip("Velocidad mínima de salida perpendicular a la superficie.")]
+    [Tooltip("Dirección de salida: 0 = opuesta a la cámara, 1 = normal de la superficie. Los valores intermedios mezclan ambas.")]
+    [Range(0f, 1f)]
+    public float batNormalBlend = 0f;
+    [Tooltip("Velocidad mínima de salida (p. ej. si estabas parado o enganchado a una pared).")]
     public float batMinSpeed = 12f;
-
-    [Tooltip("Multiplica la velocidad que llevabas al batear.")]
+    [Tooltip("Multiplica la velocidad que llevabas al batear. 1 = se conserva tal cual.")]
     public float batSpeedMultiplier = 1f;
-
     [Tooltip("Velocidad máxima de salida. 0 = sin límite.")]
     public float batMaxSpeed = 0f;
-
+    [Tooltip("Velocidad vertical máxima hacia arriba. Si se supera, el exceso se pasa a horizontal " +
+             "(la velocidad total se conserva). 0 = sin límite.")]
+    public float batMaxUpwardSpeed = 15f;
+    public float batCooldown = 0.3f;
     [Tooltip("Tiempo sin control aéreo tras el batjump, para que el input no frene el impulso al instante.")]
     public float batControlLock = 0.15f;
-
-    public float batCooldown = 0.3f;
     public AudioClip batSoundEffect;
-    public KeyCode batkey = KeyCode.Mouse0;
 
     /// <summary>Se lanza al hacer batjump: (punto de impacto, normal de la superficie). Útil para animación y FX.</summary>
     public event System.Action<Vector3, Vector3> BatJumped;
@@ -369,81 +369,51 @@ public class PlayerMovement : MonoBehaviour
         if (!batQueued || cameraTransform == null) return false;
         if (Time.time - lastBatTime < batCooldown) return false;
 
-        int mask = batSurfaceMask.value != 0
-            ? batSurfaceMask.value
-            : (groundMask.value | wallMask.value);
-
+        int mask = batSurfaceMask.value != 0 ? batSurfaceMask.value : (groundMask.value | wallMask.value);
         Vector3 center = col.bounds.center;
         Vector3 origin = cameraTransform.position;
 
-        // La cámara sigue determinando QUÉ superficie estás señalando.
-        // La velocidad del jugador determina CÓMO sales de ella.
+        // El rayo sale de la cámara, así que se alarga lo que la cámara esté lejos del jugador
         float rayLength = batRange + Vector3.Distance(origin, center);
-
-        if (!Physics.Raycast(
-                origin,
-                cameraTransform.forward,
-                out RaycastHit hit,
-                rayLength,
-                mask,
-                QueryTriggerInteraction.Ignore))
-        {
-            return false;
-        }
-
-        // El alcance real se sigue midiendo desde el jugador.
-        if (Vector3.Distance(center, hit.point) > batRange)
+        if (!Physics.Raycast(origin, cameraTransform.forward, out RaycastHit hit, rayLength, mask, QueryTriggerInteraction.Ignore))
             return false;
 
-        Vector3 normal = hit.normal;
-        Vector3 velocity = rb.linearVelocity * batSpeedMultiplier;
+        // El alcance se mide desde el jugador, no desde la cámara
+        if (Vector3.Distance(center, hit.point) > batRange) return false;
 
-        // Separamos la velocidad en:
-        // - componente normal: perpendicular a la superficie
-        // - componente tangencial: paralela a la superficie
-        float normalSpeed = Vector3.Dot(velocity, normal);
-        Vector3 tangentialVelocity = velocity - normal * normalSpeed;
+        float speed = rb.linearVelocity.magnitude * batSpeedMultiplier;
+        speed = Mathf.Max(speed, batMinSpeed);
+        if (batMaxSpeed > 0f) speed = Mathf.Min(speed, batMaxSpeed);
 
-        // Queremos salir de la superficie.
-        //
-        // Si entrábamos en ella:
-        //   normalSpeed < 0 -> se invierte.
-        //
-        // Si ya nos alejábamos:
-        //   normalSpeed > 0 -> conservamos su magnitud.
-        //
-        // Si no había componente normal:
-        //   normalSpeed == 0 -> damos el mínimo impulso.
-        float outgoingNormalSpeed = Mathf.Max(
-            Mathf.Abs(normalSpeed),
-            batMinSpeed
-        );
+        // Salimos en sentido contrario a donde mira la cámara. Como el rayo ha golpeado la cara frontal
+        // de la superficie, esa dirección siempre se aleja de ella.
+        Vector3 launchDir = -cameraTransform.forward;
+        if (batNormalBlend > 0f)
+            launchDir = Vector3.Slerp(launchDir, hit.normal, batNormalBlend).normalized; // ambos miran hacia fuera de la superficie
+        Vector3 launchVel = launchDir * speed;
 
-        Vector3 launchVelocity =
-            tangentialVelocity +
-            normal * outgoingNormalSpeed;
-
-        // Límite opcional de velocidad total.
-        if (batMaxSpeed > 0f && launchVelocity.magnitude > batMaxSpeed)
+        // La gravedad hace que la velocidad vertical "cueste" mucho más que la horizontal (altura ~ v²).
+        // Si se pasa del tope, el exceso se convierte en velocidad horizontal: el módulo se conserva.
+        if (batMaxUpwardSpeed > 0f && launchVel.y > batMaxUpwardSpeed)
         {
-            launchVelocity = launchVelocity.normalized * batMaxSpeed;
+            float vy = batMaxUpwardSpeed;
+            float horizontalSpeed = Mathf.Sqrt(Mathf.Max(speed * speed - vy * vy, 0f));
+            Vector3 flatDir = new Vector3(launchDir.x, 0f, launchDir.z);
+            if (flatDir.sqrMagnitude < 0.0001f) flatDir = -camForward; // salida casi vertical: el exceso va hacia atrás
+            launchVel = flatDir.normalized * horizontalSpeed + Vector3.up * vy;
         }
 
-        rb.linearVelocity = launchVelocity;
+        rb.linearVelocity = launchVel;
 
-        preserveMomentum = true;
+        preserveMomentum = true;                          // sin recorte de velocidad en el aire
         lastBatTime = Time.time;
-        lastJumpTime = Time.time;
+        lastJumpTime = Time.time;                         // evita re-detectar el suelo en el mismo impulso
         airControlLockedUntil = Time.time + batControlLock;
         jumpBufferedUntil = 0f;
-
         ChangeState(State.Airborne);
 
-        if (audioSource != null && batSoundEffect != null)
-            audioSource.PlayOneShot(batSoundEffect);
-
+        if (audioSource != null && batSoundEffect != null) audioSource.PlayOneShot(batSoundEffect);
         BatJumped?.Invoke(hit.point, hit.normal);
-
         return true;
     }
 
