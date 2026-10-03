@@ -2900,7 +2900,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PongInventory
   capacity: 5
   startingPongs:
-  - {fileID: 11400000, guid: cbc7a140cca14924288f5289156a88fb, type: 2}
+  - {fileID: 11400000, guid: 5f20ad03f86fb4143ac7c54612557b28, type: 2}
   - {fileID: 11400000, guid: 0299c70b7aadf304f9a8100e7ffe7396, type: 2}
   - {fileID: 11400000, guid: 0299c70b7aadf304f9a8100e7ffe7396, type: 2}
   holster: {fileID: 231709153}

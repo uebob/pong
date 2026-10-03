@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f723f6c3b59f60942b91dfaf63a2e4f5, type: 3}
+  m_Name: MUERTE!
+  m_EditorClassIdentifier: Assembly-CSharp::PongDefinition
+  displayName: MUERTE!!!!
+  icon: {fileID: 0}
+  color: {r: 1, g: 1, b: 1, a: 1}
+  prefab: {fileID: 7641227378543672036, guid: 10b1c15bc2bf47242925124989c85a1a, type: 3}
+  settings: {fileID: 11400000, guid: 90c1332e472da3f4eb36da83805bdd8b, type: 2}
+  baseStats:
+  - stat: 0
+    value: 30
+  - stat: 1
+    value: 50
+  - stat: 2
+    value: 5
+  - stat: 3
+    value: 2
+  - stat: 4
+    value: 200
+  - stat: 5
+    value: 0
+  - stat: 8
+    value: 3
+  innateBehaviors:
+  - {fileID: 11400000, guid: ac0c76ec37fff94429d4281013ff33f6, type: 2}
