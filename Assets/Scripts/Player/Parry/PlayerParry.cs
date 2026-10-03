@@ -9,6 +9,7 @@ using UnityEngine.InputSystem;
 /// Usa PongDetector (radio) y PlayerAim (dirección con aim assist).
 /// Parrear NO cambia el owner del pong; tras la recuperación, el propio pong elige objetivo.
 /// Al parrear el jugador se congela el juego unos instantes (freeze frames).
+/// Si el parry se consigue en el mismo clic en que se abrió la ventana, ese clic no hace batjump.
 /// </summary>
 [RequireComponent(typeof(PongDetector), typeof(PlayerAim))]
 public class PlayerParry : MonoBehaviour
@@ -27,6 +28,13 @@ public class PlayerParry : MonoBehaviour
     [Tooltip("1 = solo justo delante, 0 = hemisferio frontal, -1 = cualquier dirección.")]
     [Range(-1f, 1f)]
     [SerializeField] private float minFacingDot = 0f;
+
+    [Header("Batjump")]
+    [Tooltip("Si es true, el clic que consigue un parry NO hace batjump. " +
+             "Si no se parrea nada con ese clic, el batjump funciona como siempre.")]
+    [SerializeField] private bool consumeBatInputOnParry = true;
+    [Tooltip("Se busca solo si está vacío (en este objeto o en sus padres).")]
+    [SerializeField] private PlayerMovement movement;
 
     [Header("Freeze frames")]
     [Tooltip("Duración del congelado al parrear, en tiempo real (s). 0 = desactivado.")]
@@ -47,6 +55,7 @@ public class PlayerParry : MonoBehaviour
     private float windowTimer;
     private float cooldownTimer;
     private int parriedThisWindow;
+    private int parryPressFrame = -1;   // frame en el que se pulsó el parry (para saber si es "el mismo clic")
 
     // Freeze frames
     private Coroutine freezeRoutine;
@@ -58,6 +67,9 @@ public class PlayerParry : MonoBehaviour
         detector = GetComponent<PongDetector>();
         aim = GetComponent<PlayerAim>();
         audioSource = gameObject.GetComponent<AudioSource>();
+
+        if (movement == null)
+            movement = GetComponentInParent<PlayerMovement>();
     }
 
     private void OnEnable() => parryAction.Enable();
@@ -78,6 +90,7 @@ public class PlayerParry : MonoBehaviour
             windowTimer = parryWindow;
             cooldownTimer = parryCooldown;
             parriedThisWindow = 0;
+            parryPressFrame = Time.frameCount;
             ParryStarted?.Invoke();
         }
 
@@ -106,6 +119,12 @@ public class PlayerParry : MonoBehaviour
             if (projectile.Parry(aimDirection))
             {
                 projectile.ChangeFaction(PongFaction.Player);
+
+                // Ese clic ya se ha usado para parrear: que no haga también batjump.
+                // Solo cuenta si el parry se consigue en el mismo frame de la pulsación; un parry
+                // que llega más tarde dentro de la ventana no cancela un batjump ya hecho.
+                if (consumeBatInputOnParry && movement != null && Time.frameCount == parryPressFrame)
+                    movement.ConsumeBatInput();
 
                 ParrySucceeded?.Invoke(projectile);
                 audioSource.PlayOneShot(parrySoundEffect);

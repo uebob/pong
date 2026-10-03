@@ -107,6 +107,17 @@ public class PlayerMovement : MonoBehaviour
 
     public State CurrentState => state;
 
+    /// <summary>
+    /// Cancela el batjump del clic actual porque otro sistema (p. ej. el parry) ya lo ha usado.
+    /// Funciona sin importar el orden en que se ejecuten los Update de ambos scripts, y también
+    /// durante un freeze (timeScale 0), donde el FixedUpdate no corre y el clic seguiría en cola.
+    /// </summary>
+    public void ConsumeBatInput()
+    {
+        batQueued = false;
+        batSuppressedUntil = Time.unscaledTime + BatConsumeWindow;
+    }
+
     // --- Internos ---
     private Rigidbody rb;
     private Collider col;
@@ -117,6 +128,8 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 camForward;     // forward de la cámara aplanado
     private float jumpBufferedUntil;
     private bool dashQueued, poundQueued, batQueued;
+    private float batSuppressedUntil = -10f;      // el clic de batjump se ignora hasta este instante (tiempo real)
+    private const float BatConsumeWindow = 0.05f; // margen para cubrir el orden de Update y 1 frame de desfase entre sistemas de input
 
     private bool isGrounded;
     private int jumpsRemaining;
@@ -158,7 +171,7 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetButtonDown("Jump")) jumpBufferedUntil = Time.time + jumpBufferTime;
         if (Input.GetKeyDown(dashKey)) dashQueued = true;
         if (Input.GetKeyDown(groundPoundKey)) poundQueued = true;
-        if (Input.GetKeyDown(batkey)) batQueued = true;
+        if (Input.GetKeyDown(batkey) && Time.unscaledTime >= batSuppressedUntil) batQueued = true;
     }
 
     void FixedUpdate()

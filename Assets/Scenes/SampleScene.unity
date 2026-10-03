@@ -2939,7 +2939,7 @@ MonoBehaviour:
   batMinSpeed: 12
   batSpeedMultiplier: 1
   batMaxSpeed: 0
-  batMaxUpwardSpeed: 15
+  batMaxUpwardSpeed: 0
   batCooldown: 0.3
   batControlLock: 0.15
   batSoundEffect: {fileID: 8300000, guid: 7a4345656db505c4b931ff27c0c22fbc, type: 3}
@@ -3063,6 +3063,8 @@ MonoBehaviour:
   parryCooldown: 0.4
   maxProjectilesPerParry: 1
   minFacingDot: -0.28
+  consumeBatInputOnParry: 1
+  movement: {fileID: 0}
   freezeDuration: 0.1
   freezeTimeScale: 0
   parrySoundEffect: {fileID: 8300000, guid: daf55ebd4ea866543b8c7efc9bb7e052, type: 3}
