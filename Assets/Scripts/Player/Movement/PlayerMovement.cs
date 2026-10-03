@@ -5,6 +5,8 @@ using UnityEngine;
 /// Estados: Grounded, Airborne, Dashing, GroundPound, WallCling, Sliding.
 /// Acción especial: Batjump (clic contra una superficie cercana, disponible desde cualquier estado).
 /// Requiere un Collider (idealmente cápsula con Physic Material de fricción 0).
+/// Los campos públicos son valores BASE; los objetos pasivos (PlayerPassives) se aplican
+/// en las propiedades de la sección ESTADÍSTICAS CON PASIVOS.
 /// </summary>
 [RequireComponent(typeof(Rigidbody), typeof(Collider))]
 public class PlayerMovement : MonoBehaviour
@@ -148,6 +150,31 @@ public class PlayerMovement : MonoBehaviour
 
     private bool JumpPressed => Time.time <= jumpBufferedUntil;
 
+    // ---------------------------------------------------- ESTADÍSTICAS CON PASIVOS
+    // Los campos públicos de arriba son los valores BASE (los que tocas en el inspector).
+    // Estas propiedades les aplican los pasivos del jugador (PlayerPassives), si hay.
+    // Se leen en cada uso, así que un pasivo recogido surte efecto al instante.
+    private PlayerPassives passives;
+
+    private float Stat(PlayerStat stat, float baseValue) =>
+        passives != null ? passives.Apply(stat, baseValue) : baseValue;
+
+    private int StatInt(PlayerStat stat, int baseValue) =>
+        passives != null ? passives.ApplyInt(stat, baseValue) : baseValue;
+
+    // Los Mathf.Max evitan valores negativos (p. ej. una altura de salto negativa daría NaN).
+    private float MoveSpeed          => Mathf.Max(0f, Stat(PlayerStat.MoveSpeed, maxSpeed));
+    private int   MaxJumps           => Mathf.Max(0, StatInt(PlayerStat.MaxJumps, maxJumps));
+    private float JumpHeight         => Mathf.Max(0f, Stat(PlayerStat.JumpHeight, jumpHeight));
+    private float DashSpeed          => Mathf.Max(0f, Stat(PlayerStat.DashSpeed, dashSpeed));
+    private float DashDuration       => Mathf.Max(0f, Stat(PlayerStat.DashDuration, dashDuration));
+    private float DashCooldown       => Mathf.Max(0f, Stat(PlayerStat.DashCooldown, dashCooldown));
+    private int   MaxAirDashes       => Mathf.Max(0, StatInt(PlayerStat.MaxAirDashes, maxAirDashes));
+    private float BatRange           => Mathf.Max(0f, Stat(PlayerStat.BatRange, batRange));
+    private float BatCooldown        => Mathf.Max(0f, Stat(PlayerStat.BatCooldown, batCooldown));
+    private float BatSpeedMultiplier => Mathf.Max(0f, Stat(PlayerStat.BatSpeedMultiplier, batSpeedMultiplier));
+    private float BatMinSpeed        => Mathf.Max(0f, Stat(PlayerStat.BatMinSpeed, batMinSpeed));
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -157,6 +184,7 @@ public class PlayerMovement : MonoBehaviour
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic; // el ground pound es rápido
         audioSource = GetComponent<AudioSource>();
+        passives = GetComponentInParent<PlayerPassives>(); // opcional: sin él se usan los valores base
 
         if (cameraTransform == null && Camera.main != null)
             cameraTransform = Camera.main.transform;
@@ -237,8 +265,8 @@ public class PlayerMovement : MonoBehaviour
 
             case State.Dashing:
                 Vector3 dir = wishDir.sqrMagnitude > 0.01f ? wishDir.normalized : camForward;
-                dashVelocity = dir * dashSpeed;
-                stateTimer = dashDuration;
+                dashVelocity = dir * DashSpeed;
+                stateTimer = DashDuration;
                 lastDashTime = Time.time;
                 rb.useGravity = false;
                 rb.linearVelocity = dashVelocity;
@@ -267,8 +295,8 @@ public class PlayerMovement : MonoBehaviour
 
     void RefreshGroundResources()
     {
-        jumpsRemaining = maxJumps;
-        airDashesRemaining = maxAirDashes;
+        jumpsRemaining = MaxJumps;
+        airDashesRemaining = MaxAirDashes;
         preserveMomentum = false;
     }
 
@@ -278,7 +306,7 @@ public class PlayerMovement : MonoBehaviour
         if (!isGrounded)
         {
             // Caminar fuera de un borde cuenta como haber gastado el salto de suelo
-            jumpsRemaining = Mathf.Min(jumpsRemaining, Mathf.Max(maxJumps - 1, 0));
+            jumpsRemaining = Mathf.Min(jumpsRemaining, Mathf.Max(MaxJumps - 1, 0));
             ChangeState(State.Airborne);
             return;
         }
@@ -292,9 +320,10 @@ public class PlayerMovement : MonoBehaviour
     void GroundMove()
     {
         Vector3 flat = FlatVelocity();
-        // Si vamos más rápido que maxSpeed (p. ej. tras un dash) frenamos suave; si no, aceleramos normal.
-        float rate = flat.magnitude > maxSpeed + 0.01f ? groundExcessDecel : groundAcceleration;
-        flat = Vector3.MoveTowards(flat, wishDir * maxSpeed, rate * Time.fixedDeltaTime);
+        float speedCap = MoveSpeed;
+        // Si vamos más rápido que la velocidad máxima (p. ej. tras un dash) frenamos suave; si no, aceleramos normal.
+        float rate = flat.magnitude > speedCap + 0.01f ? groundExcessDecel : groundAcceleration;
+        flat = Vector3.MoveTowards(flat, wishDir * speedCap, rate * Time.fixedDeltaTime);
         SetFlatVelocity(flat);
     }
 
@@ -320,13 +349,14 @@ public class PlayerMovement : MonoBehaviour
     void AirMove()
     {
         Vector3 flat = FlatVelocity();
+        float speedCap = MoveSpeed;
 
         // Control aéreo estilo "Source": el input solo AÑADE velocidad en su dirección
         // hasta maxSpeed. Nunca recorta la velocidad que ya llevas.
         if (Time.time >= airControlLockedUntil && wishDir.sqrMagnitude > 0.01f)
         {
             float current = Vector3.Dot(flat, wishDir);
-            float add = maxSpeed - current;
+            float add = speedCap - current;
             if (add > 0f)
                 flat += wishDir * Mathf.Min(add, airAcceleration * Time.fixedDeltaTime);
         }
@@ -335,8 +365,8 @@ public class PlayerMovement : MonoBehaviour
         if (!preserveMomentum)
         {
             float s = flat.magnitude;
-            if (s > maxSpeed)
-                flat = flat.normalized * Mathf.MoveTowards(s, maxSpeed, airExcessDecel * Time.fixedDeltaTime);
+            if (s > speedCap)
+                flat = flat.normalized * Mathf.MoveTowards(s, speedCap, airExcessDecel * Time.fixedDeltaTime);
         }
 
         SetFlatVelocity(flat);
@@ -348,7 +378,7 @@ public class PlayerMovement : MonoBehaviour
         if (jumpsRemaining <= 0) return false;
         jumpsRemaining--;
 
-        float height = jumpHeight;
+        float height = JumpHeight;
         // Ground pound bounce: salto pulsado poco después de aterrizar de un ground pound
         if (isGrounded && Time.time - lastPoundLandTime <= bounceWindow)
         {
@@ -380,22 +410,24 @@ public class PlayerMovement : MonoBehaviour
     bool TryBatJump()
     {
         if (!batQueued || cameraTransform == null) return false;
-        if (Time.time - lastBatTime < batCooldown) return false;
+        if (Time.time - lastBatTime < BatCooldown) return false;
 
         int mask = batSurfaceMask.value != 0 ? batSurfaceMask.value : (groundMask.value | wallMask.value);
         Vector3 center = col.bounds.center;
         Vector3 origin = cameraTransform.position;
 
+        float range = BatRange;
+
         // El rayo sale de la cámara, así que se alarga lo que la cámara esté lejos del jugador
-        float rayLength = batRange + Vector3.Distance(origin, center);
+        float rayLength = range + Vector3.Distance(origin, center);
         if (!Physics.Raycast(origin, cameraTransform.forward, out RaycastHit hit, rayLength, mask, QueryTriggerInteraction.Ignore))
             return false;
 
         // El alcance se mide desde el jugador, no desde la cámara
-        if (Vector3.Distance(center, hit.point) > batRange) return false;
+        if (Vector3.Distance(center, hit.point) > range) return false;
 
-        float speed = rb.linearVelocity.magnitude * batSpeedMultiplier;
-        speed = Mathf.Max(speed, batMinSpeed);
+        float speed = rb.linearVelocity.magnitude * BatSpeedMultiplier;
+        speed = Mathf.Max(speed, BatMinSpeed);
         if (batMaxSpeed > 0f) speed = Mathf.Min(speed, batMaxSpeed);
 
         // Salimos en sentido contrario a donde mira la cámara. Como el rayo ha golpeado la cara frontal
@@ -434,7 +466,7 @@ public class PlayerMovement : MonoBehaviour
     bool TryStartDash()
     {
         if (!dashQueued) return false;
-        if (Time.time - lastDashTime < dashDuration + dashCooldown) return false;
+        if (Time.time - lastDashTime < DashDuration + DashCooldown) return false;
         if (!isGrounded && airDashesRemaining <= 0) return false;
 
         audioSource.PlayOneShot(dashSoundEffect);
@@ -577,7 +609,7 @@ public class PlayerMovement : MonoBehaviour
         lastJumpTime = lastWallJumpTime = Time.time;
         airControlLockedUntil = Time.time + wallJumpControlLock;
         jumpBufferedUntil = 0f;
-        if (wallJumpRefillsJumps) jumpsRemaining = maxJumps;
+        if (wallJumpRefillsJumps) jumpsRemaining = MaxJumps;
 
         ChangeState(State.Airborne);
     }
@@ -647,6 +679,6 @@ public class PlayerMovement : MonoBehaviour
 
         // Alcance del batjump
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, batRange);
+        Gizmos.DrawWireSphere(transform.position, BatRange);
     }
 }

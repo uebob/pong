@@ -5,9 +5,11 @@ public class DebugText : MonoBehaviour
 {
     [SerializeField] private TMP_Text playerStatsText;
     [SerializeField] private TMP_Text pongsText;
+    [SerializeField] private TMP_Text passivesText;
     private Rigidbody rb;
     private PlayerHealth playerHealth;
     private PongInventory inventory;
+    private PlayerPassives pasivos;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -15,6 +17,7 @@ public class DebugText : MonoBehaviour
         rb = gameObject.GetComponent<Rigidbody>();
         playerHealth = gameObject.GetComponent<PlayerHealth>();
         inventory = gameObject.GetComponent<PongInventory>();
+        pasivos = gameObject.GetComponent<PlayerPassives>();
     }
 
     // Update is called once per frame
@@ -28,9 +31,21 @@ public class DebugText : MonoBehaviour
         playerStatsText.text = "health: " + playerHealth.health + "\n speed: " + speed + "\n y speed: " + yspeed;
 
         pongsText.text = "Pongs:\n";
-        foreach (var pong in inventory.queue)
+        if(inventory.queue.Count > 0)
         {
-            pongsText.text += pong.Definition.displayName + "\n";
+            foreach (var pong in inventory.queue)
+            {
+                pongsText.text += pong.Definition.displayName + "\n";
+            }
+        }
+
+        if(pasivos.ActivePassives.Count > 0)
+        {
+            passivesText.text = "pasivos: ";
+            foreach (var pasivo in pasivos.ActivePassives)
+            {
+                passivesText.text += pasivo.displayName + ", ";
+            }
         }
     }
 }

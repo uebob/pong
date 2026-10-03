@@ -15,6 +15,9 @@ public class PassiveItem : ScriptableObject
     [Tooltip("Cambios numéricos sobre las estadísticas de los pongs.")]
     public List<StatModifier> statModifiers = new List<StatModifier>();
 
+    [Tooltip("Cambios numéricos sobre las estadísticas del JUGADOR (velocidad, saltos, dash, batjump...).")]
+    public List<PlayerStatModifier> playerModifiers = new List<PlayerStatModifier>();
+
     [Tooltip("Comportamientos que se añaden a TODOS los pongs del dueño.")]
     public List<PongBehavior> grantedBehaviors = new List<PongBehavior>();
 }
