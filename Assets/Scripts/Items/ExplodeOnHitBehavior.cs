@@ -12,13 +12,15 @@ public class ExplodeOnHitBehavior : PongBehavior
     [SerializeField] private LayerMask damageMask = ~0;
     [SerializeField] private GameObject vfxPrefab;
     [SerializeField] private bool despawnAfterExplosion = true;
+    [Tooltip("Multiplica el daño del pong (Damage + velocidad × SpeedDamageScale) en la explosión.")]
+    [SerializeField] private float damageMultiplier = 1f;
 
     public override void OnHit(PongProjectile pong, Collision collision)
     {
         float radius = pong.Stats.Get(PongStat.ExplosionRadius);
         if (radius <= 0f) return;
 
-        float damage = pong.Stats.Get(PongStat.Damage);
+        float damage = CurrentDamage(pong, damageMultiplier);
 
         Collider[] hits = Physics.OverlapSphere(
             pong.transform.position, radius, damageMask, QueryTriggerInteraction.Ignore);

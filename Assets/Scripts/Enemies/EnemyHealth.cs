@@ -1,26 +1,21 @@
 using UnityEngine;
 
-public class EnemyHealth : MonoBehaviour
+/// <summary>
+/// Vida de un enemigo. Recibe daño de cualquier pong. Si un pong lo mata, ese pong se guarda
+/// en el inventario de su dueño (si lo tiene y hay hueco) en lugar de seguir rebotando.
+/// </summary>
+public class EnemyHealth : Health
 {
-    public float health;
-    public float maxHealth;
-    void Start()
+    public override void TakeDamage(float amount, PongProjectile source)
     {
-        health = maxHealth;
-    }
+        bool wasDead = IsDead;
 
-    public void TakeDamage(float damage)
-    {
-        health -= damage;
-        if(health < 0)
-        {
-            Die();
-        }
-    }
+        base.TakeDamage(amount, source);
 
-    void Die()
-    {
-        Destroy(gameObject);
-    }
+        // Solo en el golpe que mata
+        if (wasDead || !IsDead || source == null) return;
 
+        if (source.Owner != null && source.Owner.TryGetComponent(out PongInventory inventory))
+            inventory.TryStore(source);
+    }
 }

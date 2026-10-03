@@ -29,5 +29,8 @@ MonoBehaviour:
   - stat: 4
     value: 200
   - stat: 5
-    value: 10
-  innateBehaviors: []
+    value: 0
+  - stat: 8
+    value: 1
+  innateBehaviors:
+  - {fileID: 11400000, guid: ac0c76ec37fff94429d4281013ff33f6, type: 2}

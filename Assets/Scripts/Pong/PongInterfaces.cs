@@ -17,8 +17,9 @@ public enum PongFaction { Player, Enemy }
 /// <summary>
 /// Implementar en enemigos, jugador, objetos destruibles...
 /// Los behaviors no filtran a quién dañan: es el RECEPTOR quien decide en TakeDamage,
-/// mirando source.Faction / source.Owner (p. ej. un pong enemigo parreado SÍ debe
-/// dañar a enemigos, pero quizá no a quien lo lanzó si así lo quieres).
+/// mirando source.Owner si algún día quieres filtrar. Ahora mismo no se filtra nada:
+/// cualquier pong daña a cualquiera, incluido su propio dueño. La facción (Faction) solo
+/// sirve para que el pong elija objetivo; los objetos pasivos los decide el Owner.
 /// </summary>
 public interface IPongDamageable
 {

@@ -8,6 +8,10 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Pong/Behaviors/Damage On Hit", fileName = "DamageOnHit")]
 public class DamageOnHitBehavior : PongBehavior
 {
+    [Tooltip("Multiplica el daño del pong (Damage + velocidad × SpeedDamageScale) en este behavior.")]
+    [SerializeField] private float damageMultiplier = 1f;
+
+    [Tooltip("Tiempo mínimo entre dos golpes del mismo pong (s), para que un rebote no dañe varias veces.")]
     [SerializeField] private float hitCooldown = 0.25f;
 
     private class State
@@ -25,6 +29,6 @@ public class DamageOnHitBehavior : PongBehavior
         if (Time.time < state.nextHitTime) return;
         state.nextHitTime = Time.time + hitCooldown;
 
-        target.TakeDamage(pong.Stats.Get(PongStat.Damage), pong);
+        target.TakeDamage(CurrentDamage(pong, damageMultiplier), pong);
     }
 }

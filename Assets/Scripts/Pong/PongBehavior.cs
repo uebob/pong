@@ -16,6 +16,17 @@ using UnityEngine;
 /// </summary>
 public abstract class PongBehavior : ScriptableObject
 {
+    /// <summary>
+    /// Daño del pong ahora mismo: (Damage + velocidad actual × SpeedDamageScale) × multiplier.
+    /// - Damage y SpeedDamageScale son estadísticas del pong (los pasivos pueden modificarlas).
+    /// - multiplier es un ajuste propio de cada behavior (p. ej. explosión = 0.5, golpe directo = 1).
+    /// Úsalo en todos los behaviors que hagan daño: así el parry (que sube la velocidad) y los
+    /// pasivos afectan a todos por igual.
+    /// </summary>
+    protected static float CurrentDamage(PongProjectile pong, float multiplier = 1f) =>
+        (pong.Stats.Get(PongStat.Damage) +
+         pong.CurrentSpeed * pong.Stats.Get(PongStat.SpeedDamageScale)) * multiplier;
+
     public virtual void OnLaunched(PongProjectile pong) { }
     public virtual void OnParried(PongProjectile pong, int parryCount) { }
     public virtual void OnHit(PongProjectile pong, Collision collision) { }

@@ -2,68 +2,71 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// El enemigo parrea automáticamente los PongProjectile que lo tienen como objetivo
-/// y entran en su radio, devolviéndolos por donde vinieron (dirección opuesta a su velocidad).
-/// La detección filtra por layer (LayerMask); lo que cuenta es que el objeto tenga PongProjectile.
+/// El enemigo recibe el golpe de los pongs que lo tienen como objetivo y, tras la colisión,
+/// los parrea devolviéndolos por donde vinieron. Así el pong aplica su daño antes de ser desviado.
+/// Si el golpe mata al enemigo no hay parry (EnemyHealth guarda el pong en el inventario de su dueño).
+/// Debe estar en el mismo GameObject que el collider (o que su Rigidbody) para recibir OnCollisionEnter.
 /// </summary>
 public class EnemyParry : MonoBehaviour
 {
-    [Header("Detección")]
-    [Tooltip("Layer(s) de los proyectiles (por ejemplo 'Projectile').")]
-    [SerializeField] private LayerMask projectileMask;
-    [SerializeField] private float detectionRadius = 4f;
-    [Tooltip("Punto desde el que se mide el radio. Si está vacío, el propio transform.")]
-    [SerializeField] private Transform center;
-
-    [Header("Parry")]
     [Tooltip("Tiempo mínimo entre parries (s).")]
     [SerializeField] private float parryCooldown = 0.5f;
 
     public event Action<PongProjectile> Parried;
 
-    private readonly Collider[] hits = new Collider[16];
+    private Health health;
     private float nextParryTime;
-    private EnemyHealth health;
 
-    private Vector3 Center => center != null ? center.position : transform.position;
+    private PongProjectile pendingPong;
+    private Vector3 pendingIncoming;
 
-    void Awake()
+    private void Awake()
     {
-        health = gameObject.GetComponent<EnemyHealth>();
+        health = GetComponentInParent<Health>();
     }
 
-    // Los pongs se mueven en FixedUpdate, así que consultamos en el mismo ciclo.
-    private void FixedUpdate()
+    private void OnCollisionEnter(Collision collision)
     {
         if (Time.time < nextParryTime) return;
 
-        int count = Physics.OverlapSphereNonAlloc(
-            Center, detectionRadius, hits, projectileMask, QueryTriggerInteraction.Collide);
+        var projectile = collision.collider.GetComponentInParent<PongProjectile>();
+        if (projectile == null || !projectile.CanBeParried) return;
 
-        for (int i = 0; i < count; i++)
+        // Solo los proyectiles que me tienen a mí como objetivo.
+        if (!IsMyTarget(projectile.Target)) return;
+
+        // Dirección con la que llegó. Se usa la velocidad relativa de la colisión (previa al impacto)
+        // y no la del Rigidbody, porque el pong puede haber rebotado ya en su propio OnCollisionEnter.
+        Vector3 incoming = collision.relativeVelocity;
+        if (incoming.sqrMagnitude < 0.01f) return;
+
+        // El signo de relativeVelocity depende de qué cuerpo se tome de referencia: lo orientamos hacia mí.
+        Vector3 toMe = transform.position - projectile.transform.position;
+        if (Vector3.Dot(incoming, toMe) < 0f) incoming = -incoming;
+
+        // El parry se hace en el siguiente FixedUpdate: el orden entre los OnCollisionEnter del pong y
+        // del enemigo no está garantizado, y así el daño (y una posible muerte) ya están resueltos.
+        pendingPong = projectile;
+        pendingIncoming = incoming;
+    }
+
+    private void FixedUpdate()
+    {
+        if (pendingPong == null) return;
+
+        PongProjectile projectile = pendingPong;
+        Vector3 incoming = pendingIncoming;
+        pendingPong = null;
+
+        if (health != null && health.IsDead) return;   // murió con el golpe: el pong ya no se parrea
+        if (!projectile.CanBeParried) return;          // guardado, destruido, ya parreado...
+
+        // Lo devolvemos por donde vino.
+        if (projectile.Parry(-incoming.normalized))
         {
-            var projectile = hits[i].GetComponentInParent<PongProjectile>();
-            if (projectile == null || !projectile.CanBeParried) continue;
-
-            // Solo los proyectiles que me tienen a mí como objetivo.
-            if (!IsMyTarget(projectile.Target)) continue;
-
-            if (!projectile.TryGetComponent(out Rigidbody projectileBody)) continue;
-
-            health.TakeDamage(projectile.speed);
-
-            Vector3 incoming = projectileBody.linearVelocity;
-            if (incoming.sqrMagnitude < 0.01f) continue;
-
-            // Lo devolvemos por donde vino.
-            if (projectile.Parry(-incoming.normalized))
-            {
-                nextParryTime = Time.time + parryCooldown;
-                Parried?.Invoke(projectile);
-                projectile.ChangeFaction(PongFaction.Enemy);
-
-                break; // un parry por activación
-            }
+            nextParryTime = Time.time + parryCooldown;
+            projectile.ChangeFaction(PongFaction.Enemy);
+            Parried?.Invoke(projectile);
         }
     }
 
@@ -71,12 +74,5 @@ public class EnemyParry : MonoBehaviour
     private bool IsMyTarget(Transform target)
     {
         return target != null && (target == transform || target.IsChildOf(transform));
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = new Color(1f, 0.6f, 0f, 0.8f);
-        Vector3 c = center != null ? center.position : transform.position;
-        Gizmos.DrawWireSphere(c, detectionRadius);
     }
 }

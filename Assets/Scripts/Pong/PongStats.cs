@@ -18,6 +18,7 @@ public enum PongStat
     Damage,
     ExplosionRadius,       // > 0 activa la explosión de ExplodeOnHitBehavior
     SplitCount,            // reservado: división por golpe
+    SpeedDamageScale,      // daño extra por cada m/s de velocidad actual (0 = el daño no depende de la velocidad)
 }
 
 /// <summary>

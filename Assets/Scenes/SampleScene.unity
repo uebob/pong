@@ -3060,9 +3060,9 @@ MonoBehaviour:
       m_Flags: 0
     m_Flags: 0
   parryWindow: 0.2
-  parryCooldown: 0.4
-  maxProjectilesPerParry: 1
-  minFacingDot: -0.28
+  parryCooldown: 0.2
+  maxProjectilesPerParry: 0
+  minFacingDot: -0.3
   consumeBatInputOnParry: 1
   movement: {fileID: 0}
   freezeDuration: 0.1
