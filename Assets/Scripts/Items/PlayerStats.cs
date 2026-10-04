@@ -34,6 +34,9 @@ public enum PlayerStat
     BatCooldown,          // segundos
     BatSpeedMultiplier,   // multiplica la velocidad que llevas al batear
     BatMinSpeed,          // velocidad mínima de salida
+
+    // --- Economía ---
+    MoneyGain,            // se aplica a cada ingreso (Wallet.Add): Add +1 = +1 por moneda; Multiply 1.25 = +25 %
 }
 
 /// <summary>

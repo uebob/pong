@@ -10,6 +10,7 @@ public class DebugText : MonoBehaviour
     private PlayerHealth playerHealth;
     private PongInventory inventory;
     private PlayerPassives pasivos;
+    private Wallet wallet;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -18,6 +19,7 @@ public class DebugText : MonoBehaviour
         playerHealth = gameObject.GetComponent<PlayerHealth>();
         inventory = gameObject.GetComponent<PongInventory>();
         pasivos = gameObject.GetComponent<PlayerPassives>();
+        wallet = gameObject.GetComponent<Wallet>();
     }
 
     // Update is called once per frame
@@ -28,7 +30,7 @@ public class DebugText : MonoBehaviour
         if (Mathf.Abs(speed) < 0.01f) speed = 0;
         if (Mathf.Abs(yspeed) < 0.01f) yspeed = 0;
 
-        playerStatsText.text = "health: " + playerHealth.health + "\n speed: " + speed + "\n y speed: " + yspeed;
+        playerStatsText.text = "health: " + playerHealth.health + "\nmoney: " + wallet.Money + "\n speed: " + speed + "\n y speed: " + yspeed;
 
         pongsText.text = "Pongs:\n";
         if(inventory.queue.Count > 0)
