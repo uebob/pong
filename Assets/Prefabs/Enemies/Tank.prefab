@@ -201,6 +201,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyFollowPlayer
   aggroRange: 100
   turnSpeed: 360
-  moveSpeed: 2.5
+  moveSpeed: 5
   acceleration: 20
   stopDistance: 0
