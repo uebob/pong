@@ -29,7 +29,7 @@ public class Health : MonoBehaviour, IPongDamageable
     /// <summary>Punto de entrada de los pongs (IPongDamageable).</summary>
     public virtual void TakeDamage(float amount, PongProjectile source) => ApplyDamage(amount);
 
-    protected void ApplyDamage(float amount)
+    protected virtual void ApplyDamage(float amount)
     {
         if (IsDead || amount <= 0f) return;
 

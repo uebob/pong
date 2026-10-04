@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f723f6c3b59f60942b91dfaf63a2e4f5, type: 3}
-  m_Name: ExplodeDefinition
+  m_Name: BOMBA!
   m_EditorClassIdentifier: Assembly-CSharp::PongDefinition
   displayName: Bomba
   icon: {fileID: 0}
-  color: {r: 1, g: 0, b: 0.15076351, a: 1}
+  color: {r: 1, g: 0.6628829, b: 0, a: 1}
   prefab: {fileID: 7641227378543672036, guid: 10b1c15bc2bf47242925124989c85a1a, type: 3}
   settings: {fileID: 11400000, guid: 90c1332e472da3f4eb36da83805bdd8b, type: 2}
   baseStats:

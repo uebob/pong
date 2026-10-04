@@ -31,6 +31,11 @@ public class PongDefinition : ScriptableObject
     [Header("Comportamientos propios")]
     public List<PongBehavior> innateBehaviors = new List<PongBehavior>();
 
+    // Nombres de la propiedad de color según el shader: URP/HDRP usan _BaseColor, el pipeline clásico _Color.
+    // Se asignan las dos: si el shader no tiene una de ellas, simplemente se ignora.
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    private static readonly int ColorId = Shader.PropertyToID("_Color");
+
     private static List<StatValue> DefaultStats() => new List<StatValue>
     {
         new StatValue { stat = PongStat.CruiseSpeed,          value = 12f },
@@ -73,6 +78,33 @@ public class PongDefinition : ScriptableObject
 
         PongProjectile pong = Instantiate(prefab, position, rotation);
         pong.Setup(this, owner, faction);
+        ApplyColor(pong);
         return pong;
+    }
+
+    /// <summary>
+    /// Tiñe los renderers del pong con el color de la definición. Usa un MaterialPropertyBlock,
+    /// así no se crean copias del material por cada pong instanciado.
+    /// </summary>
+    private void ApplyColor(PongProjectile pong)
+    {
+        var block = new MaterialPropertyBlock();
+
+        foreach (Renderer r in pong.GetComponentsInChildren<Renderer>(true))
+        {
+            if (r is SpriteRenderer sprite)
+            {
+                sprite.color = color;
+                continue;
+            }
+
+            // Solo mallas: se ignoran trails, partículas, etc.
+            if (!(r is MeshRenderer) && !(r is SkinnedMeshRenderer)) continue;
+
+            r.GetPropertyBlock(block);
+            block.SetColor(BaseColorId, color);
+            block.SetColor(ColorId, color);
+            r.SetPropertyBlock(block);
+        }
     }
 }

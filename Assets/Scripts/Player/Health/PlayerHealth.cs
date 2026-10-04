@@ -6,18 +6,48 @@ using UnityEngine;
 /// El daño de un pong se aplica tras un periodo de gracia: si en ese tiempo el pong se parrea
 /// (o se guarda), no hay daño. Da margen para parrear "justo tarde".
 /// Tras recibir el golpe, el pong se intenta guardar en la cola.
+/// Tras recibir daño (de un pong o directo, p. ej. contacto) hay un periodo de invulnerabilidad.
 /// </summary>
 public class PlayerHealth : Health
 {
     [Tooltip("Tiempo (en tiempo real) tras el golpe durante el cual un parry aún cancela el daño. 0 = daño inmediato.")]
     [SerializeField] private float collisionGracePeriod = 0.1f;
 
+    [Header("Invulnerabilidad (iframes)")]
+    [Tooltip("Segundos de invulnerabilidad tras recibir daño. 0 = desactivado.")]
+    [SerializeField] private float invulnerabilityTime = 1f;
+
     private PongInventory inventory;
+    private float invulnerableUntil;
+
+    /// <summary>True mientras el jugador no puede recibir daño (para parpadeo, sonido, etc.).</summary>
+    public bool IsInvulnerable => Time.time < invulnerableUntil;
 
     protected override void Start()
     {
         base.Start();
         inventory = GetComponent<PongInventory>();
+    }
+
+    /// <summary>
+    /// Concede invulnerabilidad extra (p. ej. durante un dash). Nunca acorta la que ya hay.
+    /// </summary>
+    public void GrantInvulnerability(float seconds)
+    {
+        invulnerableUntil = Mathf.Max(invulnerableUntil, Time.time + seconds);
+    }
+
+    /// <summary>
+    /// Punto único por el que pasa TODO el daño (pongs y daño directo): aquí se aplican los iframes.
+    /// </summary>
+    protected override void ApplyDamage(float amount)
+    {
+        if (IsInvulnerable) return;
+
+        base.ApplyDamage(amount);
+
+        if (!IsDead && invulnerabilityTime > 0f)
+            GrantInvulnerability(invulnerabilityTime);
     }
 
     public override void TakeDamage(float amount, PongProjectile source)
@@ -52,8 +82,9 @@ public class PlayerHealth : Health
 
     private void Resolve(float amount, PongProjectile source)
     {
-        ApplyDamage(amount);
+        ApplyDamage(amount); // si hay iframes, no hace daño
 
+        // El pong se guarda igualmente, haya hecho daño o no
         if (!IsDead && source != null && inventory != null)
             inventory.TryStore(source);
     }
