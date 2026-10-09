@@ -129,6 +129,7 @@ public class PlayerParry : MonoBehaviour
                 ParrySucceeded?.Invoke(projectile);
                 audioSource.PlayOneShot(parrySoundEffect);
                 RequestFreeze();
+                parryCooldown = 0;
                 parriedThisWindow++;
 
                 if (parriedThisWindow >= maxProjectilesPerParry)

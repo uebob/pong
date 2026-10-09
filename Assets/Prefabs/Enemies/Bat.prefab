@@ -19,7 +19,7 @@ GameObject:
   - component: {fileID: -7668182250736145790}
   - component: {fileID: -4091892040769337319}
   m_Layer: 0
-  m_Name: Fly
+  m_Name: Bat
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

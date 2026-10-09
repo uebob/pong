@@ -11,7 +11,7 @@ public class SpawnEnemies : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.F))
         {
             int random = Random.Range(0, enemies.Length);
-            Instantiate(enemies[random]);
+            Instantiate(enemies[random], transform.position, Quaternion.identity);
         }
         if(Input.GetKeyDown(KeyCode.G))
         {
