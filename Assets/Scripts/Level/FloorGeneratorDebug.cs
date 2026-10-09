@@ -15,6 +15,11 @@ public class FloorGeneratorDebug : MonoBehaviour
     public int seed = 12345;
     public bool generateOnStart = true;
 
+    [Header("Construcción (opcional)")]
+    public FloorBuilder builder;
+    [Tooltip("Con seed aleatorio: cuántos seeds probar hasta encontrar uno que tus prefabs puedan construir.")]
+    public int maxSeedRetries = 50;
+
     [Header("Debug")]
     public float cellSize = 2f;
     public bool showDistances = true;
@@ -29,16 +34,41 @@ public class FloorGeneratorDebug : MonoBehaviour
     [ContextMenu("Generate")]
     public void Generate()
     {
-        if (useRandomSeed)
-            seed = Random.Range(int.MinValue, int.MaxValue);
-
         var generator = new FloorGenerator(settings);
-        Layout = generator.Generate(seed);
 
-        if (Layout != null)
-            Debug.Log($"Piso generado. Seed: {seed} | Salas: {Layout.Rooms.Count} | " +
-                      $"Boss a distancia {Layout.BossRoom.DistanceFromStart} | " +
-                      $"Tienda a distancia {Layout.ShopRoom.DistanceFromStart}");
+        // Si hay builder y seed aleatorio, reintentamos con otros seeds hasta que
+        // tu librería de prefabs pueda construir el piso entero.
+        int attempts = (useRandomSeed && builder != null) ? maxSeedRetries : 1;
+        bool built = false;
+        string report = null;
+
+        for (int i = 0; i < attempts; i++)
+        {
+            if (useRandomSeed)
+                seed = Random.Range(int.MinValue, int.MaxValue);
+
+            Layout = generator.Generate(seed);
+            if (Layout == null) return;
+
+            if (builder == null) break;
+
+            if (builder.CanBuild(Layout, out report))
+            {
+                builder.Build(Layout);
+                built = true;
+                break;
+            }
+        }
+
+        Debug.Log($"Piso generado. Seed: {seed} | Salas: {Layout.Rooms.Count} | " +
+                  $"Boss a distancia {Layout.BossRoom.DistanceFromStart} | " +
+                  $"Tienda a distancia {Layout.ShopRoom.DistanceFromStart}");
+
+        if (builder != null && !built)
+        {
+            builder.Clear();
+            Debug.LogError($"No se pudo construir el piso (seed {seed}). {report}");
+        }
     }
 
     private Vector3 ToWorld(Vector2Int gridPos)

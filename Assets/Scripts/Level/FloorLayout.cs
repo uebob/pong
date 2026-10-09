@@ -59,6 +59,18 @@ public class RoomData
 
     public bool HasDoor(Direction d) => Doors[(int)d];
 
+    /// <summary>Puertas como máscara de bits (bit i = Direction i). N=1, E=2, S=4, W=8.</summary>
+    public int DoorMask
+    {
+        get
+        {
+            int m = 0;
+            for (int i = 0; i < Doors.Length; i++)
+                if (Doors[i]) m |= 1 << i;
+            return m;
+        }
+    }
+
     public int DoorCount
     {
         get
