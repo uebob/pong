@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 public class PauseMenu : MonoBehaviour
 {
     [SerializeField] private GameObject pauseCanvas;
@@ -52,5 +52,11 @@ public class PauseMenu : MonoBehaviour
         #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
         #endif
+    }
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        UnpauseGame();
     }
 }

@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 /// <summary>
 /// Vida común de jugador y enemigos. Implementa IPongDamageable, así que los behaviors de los
 /// pongs (DamageOnHit, ExplodeOnHit...) la dañan sin saber qué clase concreta es.
@@ -46,6 +46,11 @@ public class Health : MonoBehaviour, IPongDamageable
     protected virtual void Die()
     {
         Died?.Invoke();
+        if(gameObject.CompareTag("Player"))
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            return;
+        }
         Destroy(gameObject);
     }
 }
