@@ -47,11 +47,17 @@ public class PlayerPassives : MonoBehaviour, IPongModifierProvider
     public int ApplyInt(PlayerStat stat, int baseValue) =>
         Mathf.RoundToInt(Apply(stat, baseValue));
 
-    public void Add(PassiveItem item)
+    /// <summary>
+    /// Añade el item. Devuelve false si no se pudo (item nulo, o no apilable y ya lo tienes).
+    /// </summary>
+    public bool Add(PassiveItem item)
     {
-        if (item == null) return;
+        if (item == null) return false;
+        if (!item.stackable && items.Contains(item)) return false;
+
         items.Add(item);
         Changed?.Invoke();
+        return true;
     }
 
     public bool Remove(PassiveItem item)

@@ -68,9 +68,9 @@ public sealed class PongStatSheet
         {
             foreach (var passive in passives)
             {
-                if (passive == null || passive.statModifiers == null) continue;
+                if (passive == null || passive.pongStatModifiers == null) continue;
 
-                foreach (var m in passive.statModifiers)
+                foreach (var m in passive.pongStatModifiers)
                 {
                     int i = (int)m.stat;
                     if (m.op == ModifierOp.Add) add[i] += m.value;

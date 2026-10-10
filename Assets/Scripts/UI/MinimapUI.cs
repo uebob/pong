@@ -56,6 +56,8 @@ public class MinimapUI : MonoBehaviour
 
     private Vector2Int currentCell;
     private bool hasCurrent;
+    private PlayerPassives passives;
+    private bool RevealAll => showAllRooms || (passives != null && passives.Apply(PlayerStat.RevealMap, 0f) > 0f);
 
     // ------------------------------------------------------------------
     // API pública
@@ -75,6 +77,8 @@ public class MinimapUI : MonoBehaviour
             var p = GameObject.FindGameObjectWithTag(playerTag);
             if (p != null) player = p.transform;
         }
+
+        BindPassives();
 
         // Orden de creación = orden de dibujado: marcador (fondo), conexiones, salas.
         float markerSize = cellSize + currentMarkerPadding * 2f;
@@ -175,7 +179,7 @@ public class MinimapUI : MonoBehaviour
 
     private CellState GetState(RoomData room)
     {
-        if (showAllRooms || room.Visited) return CellState.Visited;
+        if (RevealAll || room.Visited) return CellState.Visited;
 
         foreach (var dir in DirectionExtensions.All)
         {
@@ -263,5 +267,19 @@ public class MinimapUI : MonoBehaviour
     {
         // Permite cambiar showAllRooms desde el Inspector durante el juego
         if (Application.isPlaying && layout != null) Refresh();
+    }
+
+    private void BindPassives()
+    {
+        var found = player != null ? player.GetComponentInParent<PlayerPassives>() : null;
+        if (found == passives) return;
+        if (passives != null) passives.Changed -= Refresh;
+        passives = found;
+        if (passives != null) passives.Changed += Refresh; 
+    }
+
+    private void OnDestroy()
+    {
+        if (passives != null) passives.Changed -= Refresh;
     }
 }

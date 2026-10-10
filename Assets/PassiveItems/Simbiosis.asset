@@ -10,14 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9e1b71f04ed8eac46ae7888ec5312b6b, type: 3}
-  m_Name: DashLargo
+  m_Name: Simbiosis
   m_EditorClassIdentifier: Assembly-CSharp::PassiveItem
-  displayName: dash largo
-  description: multiplica por dos la duracion del dash
+  displayName: Simbiosis
+  description: Cada 5 parrys cura 20 de vida
   icon: {fileID: 0}
-  statModifiers: []
-  playerModifiers:
-  - stat: 4
-    op: 1
-    value: 2
+  worldModel: {fileID: 0}
+  stackable: 1
+  consumable: 0
+  pongStatModifiers: []
+  playerModifiers: []
   grantedBehaviors: []
+  effects:
+  - {fileID: 11400000, guid: 32445010b5c158749ad7ca236d81ae2b, type: 2}

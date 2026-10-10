@@ -10,16 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9e1b71f04ed8eac46ae7888ec5312b6b, type: 3}
-  m_Name: Rebate
+  m_Name: Seta
   m_EditorClassIdentifier: Assembly-CSharp::PassiveItem
-  displayName: rebate
-  description: multiplica la velocidad del bate x2
+  displayName: Seta
+  description: cura +100 de vida
   icon: {fileID: 0}
   worldModel: {fileID: 0}
   stackable: 1
-  statModifiers: []
+  consumable: 1
+  pongStatModifiers: []
   playerModifiers:
-  - stat: 9
+  - stat: 0
     op: 0
-    value: 1.5
+    value: 0
   grantedBehaviors: []
+  effects:
+  - {fileID: 11400000, guid: d165a512b8472fc49a97852c0d401fcd, type: 2}

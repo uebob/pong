@@ -10,16 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9e1b71f04ed8eac46ae7888ec5312b6b, type: 3}
-  m_Name: Rebate
+  m_Name: Mapa
   m_EditorClassIdentifier: Assembly-CSharp::PassiveItem
-  displayName: rebate
-  description: multiplica la velocidad del bate x2
+  displayName: Mapa
+  description: "Ense\xF1a todo el mapa del piso actual"
   icon: {fileID: 0}
   worldModel: {fileID: 0}
   stackable: 1
-  statModifiers: []
+  consumable: 0
+  pongStatModifiers: []
   playerModifiers:
-  - stat: 9
+  - stat: 12
     op: 0
-    value: 1.5
+    value: 1
   grantedBehaviors: []
+  effects: []

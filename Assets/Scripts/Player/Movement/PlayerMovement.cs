@@ -106,6 +106,9 @@ public class PlayerMovement : MonoBehaviour
 
     /// <summary>Se lanza al hacer batjump: (punto de impacto, normal de la superficie). Útil para animación y FX.</summary>
     public event System.Action<Vector3, Vector3> BatJumped;
+    public event System.Action Jumped;
+    public event System.Action Dashed;
+    public event System.Action GroundPoundLanded;
 
     public State CurrentState => state;
 
@@ -399,6 +402,7 @@ public class PlayerMovement : MonoBehaviour
         lastJumpTime = Time.time;
         jumpBufferedUntil = 0f; // consumir el buffer
         audioSource.PlayOneShot(jumpSoundEffect);
+        Jumped?.Invoke();
     }
 
     // ----------------------------------------------------------------- BATJUMP
@@ -472,6 +476,7 @@ public class PlayerMovement : MonoBehaviour
         audioSource.PlayOneShot(dashSoundEffect);
         if (!isGrounded) airDashesRemaining--;
         ChangeState(State.Dashing);
+        Dashed?.Invoke();
         return true;
     }
 
@@ -508,6 +513,7 @@ public class PlayerMovement : MonoBehaviour
             float bounce = Mathf.Max(fallHeight * bounceHeightMultiplier, minBounceHeight);
             if (maxBounceHeight > 0f) bounce = Mathf.Min(bounce, maxBounceHeight);
             pendingBounceHeight = bounce;
+            GroundPoundLanded?.Invoke();
 
             // ¿Rampa? -> slide en lugar de quedarse parado
             if (GetGroundNormal(out Vector3 n) && Vector3.Angle(n, Vector3.up) >= minSlideAngle)
@@ -612,6 +618,7 @@ public class PlayerMovement : MonoBehaviour
         if (wallJumpRefillsJumps) jumpsRemaining = MaxJumps;
 
         ChangeState(State.Airborne);
+        Jumped?.Invoke();
     }
 
     bool CanWallCling(out Vector3 normal)

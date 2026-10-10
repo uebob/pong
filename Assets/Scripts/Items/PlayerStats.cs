@@ -35,8 +35,12 @@ public enum PlayerStat
     BatSpeedMultiplier,   // multiplica la velocidad que llevas al batear
     BatMinSpeed,          // velocidad mínima de salida
 
+
     // --- Economía ---
     MoneyGain,            // se aplica a cada ingreso (Wallet.Add): Add +1 = +1 por moneda; Multiply 1.25 = +25 %
+
+    // --- Navegación ---
+    RevealMap,            // > 0 = el minimapa muestra todo el piso
 }
 
 /// <summary>

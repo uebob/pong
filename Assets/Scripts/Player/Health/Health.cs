@@ -1,11 +1,13 @@
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
 /// <summary>
 /// Vida común de jugador y enemigos. Implementa IPongDamageable, así que los behaviors de los
 /// pongs (DamageOnHit, ExplodeOnHit...) la dañan sin saber qué clase concreta es.
 /// No filtra por bando: cualquier pong daña a cualquiera (incluido el propio jugador).
-/// Las subclases pueden cambiar CUÁNDO se aplica el daño sobrescribiendo TakeDamage(amount, source).
+/// Las subclases pueden cambiar CUÁNDO se aplica el daño sobrescribiendo TakeDamage(amount, source),
+/// y QUÉ daño llega a aplicarse (p. ej. iframes) sobrescribiendo ApplyDamage(amount).
 /// </summary>
 public class Health : MonoBehaviour, IPongDamageable
 {
@@ -14,6 +16,8 @@ public class Health : MonoBehaviour, IPongDamageable
 
     /// <summary>Daño realmente aplicado (para HUD, flash de pantalla, sonido...).</summary>
     public event Action<float> Damaged;
+    /// <summary>Vida realmente recuperada (ya limitada por maxHealth).</summary>
+    public event Action<float> Healed;
     public event Action Died;
 
     public bool IsDead { get; private set; }
@@ -29,6 +33,19 @@ public class Health : MonoBehaviour, IPongDamageable
     /// <summary>Punto de entrada de los pongs (IPongDamageable).</summary>
     public virtual void TakeDamage(float amount, PongProjectile source) => ApplyDamage(amount);
 
+    /// <summary>Recupera vida sin pasar de maxHealth. No hace nada si está muerto.</summary>
+    public void Heal(float amount)
+    {
+        if (IsDead || amount <= 0f) return;
+
+        float before = health;
+        health = Mathf.Min(health + amount, maxHealth);
+
+        float healed = health - before;
+        if (healed > 0f) Healed?.Invoke(healed);
+    }
+
+    /// <summary>Punto único por el que pasa todo el daño. Virtual para poder filtrarlo en subclases.</summary>
     protected virtual void ApplyDamage(float amount)
     {
         if (IsDead || amount <= 0f) return;
@@ -46,7 +63,7 @@ public class Health : MonoBehaviour, IPongDamageable
     protected virtual void Die()
     {
         Died?.Invoke();
-        if(gameObject.CompareTag("Player"))
+        if (gameObject.CompareTag("Player"))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             return;
