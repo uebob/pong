@@ -20,6 +20,14 @@ public class FloorBuilder : MonoBehaviour
 
     public IReadOnlyDictionary<Vector2Int, Room> Rooms => rooms;
 
+    public float RoomSize => roomSize;
+
+    /// <summary>Celda del grid en la que está un punto del mundo.</summary>
+    public Vector2Int WorldToGrid(Vector3 world)
+    {
+        return new Vector2Int(Mathf.RoundToInt(world.x / roomSize), Mathf.RoundToInt(world.z / roomSize));
+    }
+
     /// <summary>
     /// Comprueba que la librería tiene prefab para TODAS las salas del layout.
     /// Si no, 'report' explica qué combinaciones (tipo + puertas) faltan.

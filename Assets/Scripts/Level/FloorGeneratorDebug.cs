@@ -17,6 +17,7 @@ public class FloorGeneratorDebug : MonoBehaviour
 
     [Header("Construcción (opcional)")]
     public FloorBuilder builder;
+    public MinimapUI minimap;
     [Tooltip("Con seed aleatorio: cuántos seeds probar hasta encontrar uno que tus prefabs puedan construir.")]
     public int maxSeedRetries = 50;
 
@@ -69,6 +70,9 @@ public class FloorGeneratorDebug : MonoBehaviour
             builder.Clear();
             Debug.LogError($"No se pudo construir el piso (seed {seed}). {report}");
         }
+
+        if (minimap != null && (builder == null || built))
+            minimap.Build(Layout, builder);
     }
 
     private Vector3 ToWorld(Vector2Int gridPos)
