@@ -8,8 +8,8 @@ using UnityEngine;
 public class Door : MonoBehaviour
 {
     [SerializeField] private Transform panel;
-    [SerializeField] private float openHeight = 3f;
-    [SerializeField] private float speed = 4f;
+    [SerializeField] private float openHeight = 6f;
+    [SerializeField] private float speed = 6f;
 
     private Vector3 closedPos;
     private Vector3 openPos;
