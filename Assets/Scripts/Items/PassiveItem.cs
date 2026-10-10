@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
-
+public enum Rarity
+{
+    Normal, Rare, Cursed
+}
 /// <summary>
 /// Objeto pasivo: modifica estadísticas de los pongs de su dueño y/o del jugador, les concede
 /// behaviors y/o ejecuta efectos (PassiveEffect) al recogerlo o al hacer acciones.
@@ -12,6 +15,8 @@ public class PassiveItem : ScriptableObject
     public string displayName;
     [TextArea] public string description;
     public Sprite icon;
+
+    public Rarity rarity;
 
     [Tooltip("Modelo 3D pequeño que se muestra cuando el item está en el suelo (lo usa PassivePickup). " +
              "Opcional: si lo dejas vacío, el pickup debe traer su propio modelo.")]

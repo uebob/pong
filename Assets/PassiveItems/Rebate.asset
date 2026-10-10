@@ -15,11 +15,14 @@ MonoBehaviour:
   displayName: rebate
   description: multiplica la velocidad del bate x2
   icon: {fileID: 0}
+  rarity: 0
   worldModel: {fileID: 0}
   stackable: 1
-  statModifiers: []
+  consumable: 0
+  pongStatModifiers: []
   playerModifiers:
   - stat: 9
-    op: 0
+    op: 1
     value: 1.5
   grantedBehaviors: []
+  effects: []

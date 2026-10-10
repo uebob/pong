@@ -32,7 +32,7 @@ MonoBehaviour:
     - {fileID: 8949286991888784153, guid: c6a7edf5f1c26b9458d2e2ea159b1b92, type: 3}
   - type: 4
     prefabs:
-    - {fileID: 8359599960945514264, guid: fff805a7a72f0404db7a551dc809ee82, type: 3}
+    - {fileID: 8359599960945514264, guid: 5aadcac46341b984d9e79a1a14881b41, type: 3}
   - type: 5
     prefabs:
     - {fileID: 8359599960945514264, guid: fff805a7a72f0404db7a551dc809ee82, type: 3}
