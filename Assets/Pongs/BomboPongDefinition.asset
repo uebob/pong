@@ -33,7 +33,7 @@ MonoBehaviour:
   - stat: 8
     value: 1
   - stat: 6
-    value: 1
+    value: 4
   innateBehaviors:
   - {fileID: 11400000, guid: ac0c76ec37fff94429d4281013ff33f6, type: 2}
   - {fileID: 11400000, guid: 4d16cbc8f5506a341b87eaa04b66242e, type: 2}
