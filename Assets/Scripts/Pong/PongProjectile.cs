@@ -8,8 +8,9 @@ using UnityEngine;
 /// - Behaviors modulares (innatos + concedidos por pasivos).
 /// - Owner + Faction: quién lo lanzó.
 ///   (parrearlo no lo cambia de dueño). Solo el dueño puede guardarlo.
-/// - Target propio: lo elige el propio pong. Al lanzarse según su facción; tras un parry,
-///   al terminar la recuperación: enemigo más cercano o, si no hay, el jugador.
+/// - Target propio: lo elige el propio pong. Tras lanzarse sin objetivo explícito, o tras un parry,
+///   vuela libre un instante (sin objetivo ni homing) y entonces elige: enemigo más cercano o,
+///   si no hay, el jugador.
 /// - Estados: Flying, HitStop, InHolster (desactivado y guardado en la cola).
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
@@ -46,7 +47,7 @@ public class PongProjectile : MonoBehaviour
     public float CurrentSpeed => speed;
     public bool IsConfigured => Stats != null;
 
-    /// <summary>True mientras vuela sin objetivo tras un parry (antes de volver a elegir).</summary>
+    /// <summary>True mientras vuela libre, sin objetivo (tras un parry o tras lanzarse).</summary>
     public bool IsRecovering => recovering;
 
     public bool CanBeParried =>
@@ -78,8 +79,9 @@ public class PongProjectile : MonoBehaviour
     private Vector3 direction;
     public float speed;
 
-    // homing / recuperación
+    // homing / vuelo libre
     private bool recovering;
+    private float recoveryDuration;   // cuánto dura el vuelo libre actual (tras lanzar o tras parrear)
     private float timeSinceParry = 999f;
     private float timeSinceRetarget = 999f;
     private float homingWeight = 1f;
@@ -198,7 +200,7 @@ public class PongProjectile : MonoBehaviour
         return created;
     }
 
-    /// <summary>Fuerza un objetivo. Se sobrescribe al volver a elegir (fin de recuperación).</summary>
+    /// <summary>Fuerza un objetivo. Se sobrescribe al volver a elegir (fin del vuelo libre).</summary>
     public void SetTarget(Transform newTarget) => ChangeTarget(newTarget);
 
     public void Despawn() => Destroy(gameObject);
@@ -265,7 +267,9 @@ public class PongProjectile : MonoBehaviour
     /// <summary>
     /// Lanza el pong (también sirve para uno recién instanciado). Sale a velocidad de
     /// crucero, con los parries a 0; las estadísticas se resuelven de nuevo.
-    /// Si no se pasa initialTarget, lo elige el propio pong (ver AcquireTarget).
+    /// - Con initialTarget: homing desde el primer instante hacia ese objetivo.
+    /// - Sin initialTarget: vuela libre launchFreeFlightTime s (en línea recta, sin objetivo)
+    ///   y entonces elige el suyo (ver AcquireTarget). Con launchFreeFlightTime = 0 lo elige ya.
     /// </summary>
     public void Launch(Vector3 position, Vector3 launchDirection, Transform initialTarget = null)
     {
@@ -297,8 +301,26 @@ public class PongProjectile : MonoBehaviour
         speed = CruiseSpeed;
         state = State.Flying;
 
-        if (initialTarget != null) ChangeTarget(initialTarget);
-        else AcquireTarget(initial: true);
+        if (initialTarget != null)
+        {
+            // Objetivo explícito: homing desde el primer instante.
+            ChangeTarget(initialTarget);
+        }
+        else if (Settings.launchFreeFlightTime > 0f)
+        {
+            // Vuelo libre: sin objetivo ni homing, igual que justo después de un parry.
+            // Sin esto, si no hay enemigos el objetivo es el jugador, que está pegado al punto de
+            // lanzamiento, y el pong frena y vuelve de inmediato (con el giro reforzado de closeRange).
+            ChangeTarget(null);
+            recovering = true;
+            recoveryDuration = Settings.launchFreeFlightTime;
+            timeSinceParry = 0f;
+            homingWeight = 0f;
+        }
+        else
+        {
+            AcquireTarget(initial: true);
+        }
 
         ApplyMotion();
 
@@ -313,7 +335,7 @@ public class PongProjectile : MonoBehaviour
 
     /// <summary>
     /// Parrea el proyectil hacia aimDirection. No cambia su owner. Pierde el objetivo
-    /// hasta que acabe la recuperación; entonces elige uno nuevo.
+    /// hasta que acabe el vuelo libre; entonces elige uno nuevo.
     /// </summary>
     public bool Parry(Vector3 aimDirection)
     {
@@ -372,6 +394,7 @@ public class PongProjectile : MonoBehaviour
 
         // Empieza la recuperación: vuela hacia fuera sin homing y sin objetivo.
         recovering = true;
+        recoveryDuration = Settings.homingRecoveryTime;
         timeSinceParry = 0f;
         homingWeight = 0f;
 
@@ -386,8 +409,8 @@ public class PongProjectile : MonoBehaviour
             timeSinceParry += dt;
             homingWeight = 0f;
 
-            // Fin de la recuperación: se elige objetivo (enemigo más cercano, o el jugador).
-            if (timeSinceParry >= Settings.homingRecoveryTime)
+            // Fin del vuelo libre: se elige objetivo (enemigo más cercano, o el jugador).
+            if (timeSinceParry >= recoveryDuration)
             {
                 recovering = false;
                 timeSinceRetarget = 0f;

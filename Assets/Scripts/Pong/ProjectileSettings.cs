@@ -39,6 +39,13 @@ public class ProjectileSettings : ScriptableObject
     [Tooltip("Curva de entrada del homing (X: 0-1 del tiempo, Y: 0-1 de fuerza).")]
     public AnimationCurve homingRampCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Header("Lanzamiento")]
+    [Tooltip("Tras lanzarlo (sin objetivo explícito), el pong vuela libre este tiempo (s): en línea recta, " +
+             "a velocidad de crucero, sin objetivo ni homing. Al terminar elige objetivo. " +
+             "Es la misma fase que tras un parry. Distancia recorrida ≈ tiempo × velocidad de crucero. " +
+             "0 = homing desde el primer instante.")]
+    public float launchFreeFlightTime = 0.5f;
+
     [Header("Objetivo")]
     [Tooltip("Cada cuánto busca un objetivo nuevo si pierde el actual (s).")]
     public float retargetInterval = 0.5f;
