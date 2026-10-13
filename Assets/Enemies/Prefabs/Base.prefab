@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7638429185510701004}
   - component: {fileID: 6124876905933866007}
   - component: {fileID: 3241013880233430967}
+  - component: {fileID: 5737414550307750926}
   - component: {fileID: 1784306708822072902}
   - component: {fileID: 5697822026552967761}
   m_Layer: 9
@@ -173,6 +174,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   health: 0
   maxHealth: 150
+--- !u!114 &5737414550307750926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5972242107191844610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee2e21dec53e75940a60c432dafecaec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DamageFlash
+  health: {fileID: 3241013880233430967}
+  flashMaterial: {fileID: 2100000, guid: d79b85a15b5217144a81850925d0a9e6, type: 2}
+  flashDuration: 0.08
 --- !u!114 &1784306708822072902
 MonoBehaviour:
   m_ObjectHideFlags: 0
