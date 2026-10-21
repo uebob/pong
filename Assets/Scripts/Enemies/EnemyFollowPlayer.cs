@@ -26,12 +26,14 @@ public class EnemyFollowPlayer : MonoBehaviour
     private Rigidbody rb;
     private Transform player;
     private float nextFindTime;
+    private StatusEffects status;  
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
+        status = GetComponent<StatusEffects>();   
     }
 
     private void FixedUpdate()
@@ -57,7 +59,7 @@ public class EnemyFollowPlayer : MonoBehaviour
             {
                 FaceTowards(toPlayer);
                 if (toPlayer.magnitude > stopDistance)
-                    desired = toPlayer.normalized * moveSpeed;
+                    desired = toPlayer.normalized * moveSpeed * (status != null ? status.SpeedMultiplier : 1f);
             }
         }
 

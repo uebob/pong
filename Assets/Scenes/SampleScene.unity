@@ -4953,6 +4953,7 @@ GameObject:
   - component: {fileID: 1793468653}
   - component: {fileID: 1793468654}
   - component: {fileID: 1793468655}
+  - component: {fileID: 1793468658}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -5170,7 +5171,6 @@ MonoBehaviour:
   capacity: 5
   startingPongs:
   - {fileID: 11400000, guid: 0299c70b7aadf304f9a8100e7ffe7396, type: 2}
-  - {fileID: 11400000, guid: cbc7a140cca14924288f5289156a88fb, type: 2}
   holster: {fileID: 231709153}
   launchPoint: {fileID: 0}
   fallbackLaunchDistance: 1.5
@@ -5419,7 +5419,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2469ee917fd187e4c80d408cf6a9dbf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerPassives
-  items: []
+  items:
+  - {fileID: 11400000, guid: e221c27fd322fb44b925989c17ae01b5, type: 2}
 --- !u!114 &1793468655
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5464,6 +5465,29 @@ MonoBehaviour:
   hitCooldown: 0.2
   consumeBatInputOnHit: 1
   hitSoundEffect: {fileID: 0}
+--- !u!114 &1793468658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1793468638}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c06a060a5b751c9458e69af540866e7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatusEffects
+  tickInterval: 1
+  pauseHarmfulWhileInvincible: 0
+  disableWhileFrozen:
+  - {fileID: 1793468645}
+  - {fileID: 1793468650}
+  - {fileID: 1793468647}
+  freezeRigidbody: 1
+  debugEffect:
+    type: 0
+    magnitude: 0.3
+    duration: 3
 --- !u!1 &1832200798
 GameObject:
   m_ObjectHideFlags: 0

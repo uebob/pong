@@ -3,8 +3,8 @@ using UnityEngine;
 
 /// <summary>
 /// Vida del jugador. Recibe daño de cualquier pong, también de los suyos.
-/// El daño de un pong se aplica tras un periodo de gracia: si en ese tiempo el pong se parrea
-/// (o se guarda), no hay daño. Da margen para parrear "justo tarde".
+/// El daño (y los efectos de estado) de un pong se aplica tras un periodo de gracia: si en ese tiempo
+/// el pong se parrea (o se guarda), no hay daño ni efecto. Da margen para parrear "justo tarde".
 /// Tras recibir el golpe, el pong se intenta guardar en la cola.
 /// Tras recibir daño (de un pong o directo, p. ej. contacto) hay un periodo de invulnerabilidad.
 /// </summary>
@@ -38,15 +38,19 @@ public class PlayerHealth : Health
     }
 
     /// <summary>
-    /// Punto único por el que pasa TODO el daño (pongs y daño directo): aquí se aplican los iframes.
+    /// Punto por el que pasa el daño de pongs y daño directo: aquí se aplican los iframes.
+    /// (El daño de efectos de estado, como la quemadura, no pasa por aquí: ver Health.TakeStatusDamage.)
     /// </summary>
     protected override void ApplyDamage(float amount)
     {
         if (IsInvulnerable) return;
 
+        float before = health;
         base.ApplyDamage(amount);
 
-        if (!IsDead && invulnerabilityTime > 0f)
+        // Los iframes solo empiezan si el golpe hizo daño de verdad: no si lo bloqueó, por ejemplo,
+        // una Invincibility o una Resistance total.
+        if (!IsDead && health < before && invulnerabilityTime > 0f)
             GrantInvulnerability(invulnerabilityTime);
     }
 
@@ -62,6 +66,18 @@ public class PlayerHealth : Health
         StartCoroutine(ResolveAfterGrace(amount, source));
     }
 
+    /// <summary>Los efectos de estado de un pong esperan el mismo margen de parry que el daño.</summary>
+    public override void ReceiveStatus(StatusEffectSpec spec, PongProjectile source)
+    {
+        if (source == null || collisionGracePeriod <= 0f)
+        {
+            ApplyStatus(spec);
+            return;
+        }
+
+        StartCoroutine(StatusAfterGrace(spec, source));
+    }
+
     private IEnumerator ResolveAfterGrace(float amount, PongProjectile source)
     {
         // Un parry incrementa ParryCount: comparar con el valor del golpe evita referencias caducadas.
@@ -69,15 +85,32 @@ public class PlayerHealth : Health
 
         yield return new WaitForSecondsRealtime(collisionGracePeriod);
 
-        // Si el pong sigue existiendo, comprobamos que no lo hayan parreado ni guardado durante la gracia.
-        // Si ya no existe (p. ej. explotó al golpearte), el daño era inevitable: se aplica.
-        if (source != null)
-        {
-            if (source.ParryCount != parriesAtHit) yield break;                     // parreado durante la gracia
-            if (source.CurrentState == PongProjectile.State.InHolster) yield break; // ya guardado
-        }
+        if (HitWasCancelled(source, parriesAtHit)) yield break;
 
         Resolve(amount, source);
+    }
+
+    private IEnumerator StatusAfterGrace(StatusEffectSpec spec, PongProjectile source)
+    {
+        int parriesAtHit = source.ParryCount;
+
+        yield return new WaitForSecondsRealtime(collisionGracePeriod);
+
+        if (HitWasCancelled(source, parriesAtHit)) yield break;
+
+        ApplyStatus(spec);
+    }
+
+    /// <summary>
+    /// ¿Se parreó o se guardó el pong durante la gracia? Si el pong ya no existe (p. ej. explotó al
+    /// golpearte), el golpe era inevitable y no cuenta como cancelado.
+    /// </summary>
+    private static bool HitWasCancelled(PongProjectile source, int parriesAtHit)
+    {
+        if (source == null) return false;
+
+        return source.ParryCount != parriesAtHit ||
+               source.CurrentState == PongProjectile.State.InHolster;
     }
 
     private void Resolve(float amount, PongProjectile source)

@@ -166,7 +166,8 @@ public class PlayerMovement : MonoBehaviour
         passives != null ? passives.ApplyInt(stat, baseValue) : baseValue;
 
     // Los Mathf.Max evitan valores negativos (p. ej. una altura de salto negativa daría NaN).
-    private float MoveSpeed          => Mathf.Max(0f, Stat(PlayerStat.MoveSpeed, maxSpeed));
+    private float MoveSpeed => Mathf.Max(0f, Stat(PlayerStat.MoveSpeed, maxSpeed))
+                           * (status != null ? status.SpeedMultiplier : 1f);
     private int   MaxJumps           => Mathf.Max(0, StatInt(PlayerStat.MaxJumps, maxJumps));
     private float JumpHeight         => Mathf.Max(0f, Stat(PlayerStat.JumpHeight, jumpHeight));
     private float DashSpeed          => Mathf.Max(0f, Stat(PlayerStat.DashSpeed, dashSpeed));
@@ -178,6 +179,8 @@ public class PlayerMovement : MonoBehaviour
     private float BatSpeedMultiplier => Mathf.Max(0f, Stat(PlayerStat.BatSpeedMultiplier, batSpeedMultiplier));
     private float BatMinSpeed        => Mathf.Max(0f, Stat(PlayerStat.BatMinSpeed, batMinSpeed));
 
+    private StatusEffects status;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -188,6 +191,7 @@ public class PlayerMovement : MonoBehaviour
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic; // el ground pound es rápido
         audioSource = GetComponent<AudioSource>();
         passives = GetComponentInParent<PlayerPassives>(); // opcional: sin él se usan los valores base
+        status = GetComponentInParent<StatusEffects>();   
 
         if (cameraTransform == null && Camera.main != null)
             cameraTransform = Camera.main.transform;
