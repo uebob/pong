@@ -38,7 +38,7 @@ public class ExplodeOnHitBehavior : PongBehavior
         if (vfxPrefab != null)
         {
             var vfx = Instantiate(vfxPrefab, pong.transform.position, Quaternion.identity);
-            vfx.transform.localScale = Vector3.one * radius * 2f;
+            //vfx.transform.localScale = Vector3.one * radius * 2f;
         }
 
         if (despawnAfterExplosion)

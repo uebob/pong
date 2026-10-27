@@ -15,6 +15,6 @@ MonoBehaviour:
   damageMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  vfxPrefab: {fileID: 0}
+  vfxPrefab: {fileID: 8756199155430600647, guid: 6401eb8da40ccdb48a8b99be98b43e98, type: 3}
   despawnAfterExplosion: 0
   damageMultiplier: 1

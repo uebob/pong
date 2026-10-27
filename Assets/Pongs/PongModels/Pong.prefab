@@ -290,6 +290,7 @@ GameObject:
   - component: {fileID: 4953155006873065083}
   - component: {fileID: 8685189247616571343}
   - component: {fileID: -7156606389155428971}
+  - component: {fileID: 1891801248612333271}
   m_Layer: 7
   m_Name: Pong
   m_TagString: Pong
@@ -437,3 +438,15 @@ MonoBehaviour:
   target: {fileID: 0}
   bounceOnCollision: 1
   speed: 0
+--- !u!114 &1891801248612333271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9043581217474691422}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad112fbbfef6b7a4ebef9831b510c6fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PongTargetReporter

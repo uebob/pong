@@ -58,7 +58,6 @@ public class EnemyParry : MonoBehaviour
         Vector3 incoming = pendingIncoming;
         pendingPong = null;
 
-        if (health != null && health.IsDead) return;   // murió con el golpe: el pong ya no se parrea
         if (!projectile.CanBeParried) return;          // guardado, destruido, ya parreado...
 
         // Lo devolvemos por donde vino.

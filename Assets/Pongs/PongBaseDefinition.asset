@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PongDefinition
   displayName: Base
   icon: {fileID: 0}
-  color: {r: 0.3066038, g: 0.9126429, b: 1, a: 1}
+  color: {r: 0.1641509, g: 1, b: 0.25152087, a: 1}
   prefab: {fileID: -7156606389155428971, guid: 10b1c15bc2bf47242925124989c85a1a, type: 3}
   settings: {fileID: 11400000, guid: 90c1332e472da3f4eb36da83805bdd8b, type: 2}
   baseStats:
   - stat: 0
-    value: 20
+    value: 25
   - stat: 1
-    value: 40
+    value: 45
   - stat: 2
     value: 2.5
   - stat: 3

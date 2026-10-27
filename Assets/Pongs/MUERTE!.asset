@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: MUERTE!!!!
   icon: {fileID: 0}
   color: {r: 1, g: 0, b: 0, a: 1}
-  prefab: {fileID: 7641227378543672036, guid: 10b1c15bc2bf47242925124989c85a1a, type: 3}
+  prefab: {fileID: -7156606389155428971, guid: 10b1c15bc2bf47242925124989c85a1a, type: 3}
   settings: {fileID: 11400000, guid: 90c1332e472da3f4eb36da83805bdd8b, type: 2}
   baseStats:
   - stat: 0

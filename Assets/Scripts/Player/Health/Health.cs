@@ -17,6 +17,8 @@ public class Health : MonoBehaviour, IPongDamageable
     public float health;
     public float maxHealth = 100f;
 
+    public GameObject deathVFX;
+
     /// <summary>Daño realmente aplicado (para HUD, flash de pantalla, sonido...).</summary>
     public event Action<float> Damaged;
     /// <summary>Vida realmente recuperada (ya limitada por maxHealth).</summary>
@@ -108,6 +110,9 @@ public class Health : MonoBehaviour, IPongDamageable
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             return;
         }
+
+        if(deathVFX!=null) Instantiate(deathVFX, gameObject.transform.position, Quaternion.identity);
+        
         Destroy(gameObject);
     }
 }

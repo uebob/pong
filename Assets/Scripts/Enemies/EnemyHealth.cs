@@ -14,8 +14,5 @@ public class EnemyHealth : Health
 
         // Solo en el golpe que mata
         if (wasDead || !IsDead || source == null) return;
-
-        if (source.Owner != null && source.Owner.TryGetComponent(out PongInventory inventory))
-            inventory.TryStore(source);
     }
 }

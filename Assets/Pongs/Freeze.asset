@@ -12,16 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f723f6c3b59f60942b91dfaf63a2e4f5, type: 3}
   m_Name: Freeze
   m_EditorClassIdentifier: Assembly-CSharp::PongDefinition
-  displayName: Base
+  displayName: Congelar
   icon: {fileID: 0}
-  color: {r: 0.6461374, g: 0.80731225, b: 0.8301887, a: 1}
-  prefab: {fileID: 7641227378543672036, guid: 10b1c15bc2bf47242925124989c85a1a, type: 3}
+  color: {r: 0.47358483, g: 0.669718, b: 1, a: 1}
+  prefab: {fileID: -7156606389155428971, guid: 10b1c15bc2bf47242925124989c85a1a, type: 3}
   settings: {fileID: 11400000, guid: 90c1332e472da3f4eb36da83805bdd8b, type: 2}
   baseStats:
   - stat: 0
-    value: 20
+    value: 25
   - stat: 1
-    value: 40
+    value: 45
   - stat: 2
     value: 2.5
   - stat: 3

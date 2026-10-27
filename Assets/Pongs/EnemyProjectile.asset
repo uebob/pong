@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f723f6c3b59f60942b91dfaf63a2e4f5, type: 3}
+  m_Name: EnemyProjectile
+  m_EditorClassIdentifier: Assembly-CSharp::PongDefinition
+  displayName: proyectil
+  icon: {fileID: 0}
+  color: {r: 1, g: 0, b: 0, a: 1}
+  prefab: {fileID: -7156606389155428971, guid: a76a97feebe307c4b8d59c4a0c6f592f, type: 3}
+  settings: {fileID: 11400000, guid: a4e9fdb6487dafe428af74a92c50df48, type: 2}
+  baseStats:
+  - stat: 0
+    value: 35
+  - stat: 1
+    value: 35
+  - stat: 2
+    value: 0
+  - stat: 3
+    value: 0
+  - stat: 4
+    value: 0
+  - stat: 5
+    value: 0
+  - stat: 8
+    value: 1
+  innateBehaviors:
+  - {fileID: 11400000, guid: ac0c76ec37fff94429d4281013ff33f6, type: 2}
+  - {fileID: 11400000, guid: 370d419ec6860ca48b532733a3d73ee1, type: 2}

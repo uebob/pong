@@ -1506,7 +1506,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 231709153}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: PongHolder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3033,7 +3033,7 @@ MonoBehaviour:
     loopChance: 0.15
     minBossDistance: 5
     minShopDistance: 3
-    combatChance: 0.5
+    combatChance: 0.7
     safeRoomsNextToStart: 1
     maxAttempts: 100
   useRandomSeed: 1
@@ -3929,7 +3929,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1074129515}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: GroundCheck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4954,7 +4954,7 @@ GameObject:
   - component: {fileID: 1793468654}
   - component: {fileID: 1793468655}
   - component: {fileID: 1793468658}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -5171,6 +5171,8 @@ MonoBehaviour:
   capacity: 5
   startingPongs:
   - {fileID: 11400000, guid: 0299c70b7aadf304f9a8100e7ffe7396, type: 2}
+  - {fileID: 11400000, guid: 4e0d936c663378946aa1d9ef7d120e6c, type: 2}
+  - {fileID: 11400000, guid: cbc7a140cca14924288f5289156a88fb, type: 2}
   holster: {fileID: 231709153}
   launchPoint: {fileID: 0}
   fallbackLaunchDistance: 1.5
@@ -5271,7 +5273,7 @@ MonoBehaviour:
       m_Flags: 0
     m_Flags: 0
   parryWindow: 0.2
-  parryCooldown: 0
+  parryCooldown: 0.3
   maxProjectilesPerParry: 0
   minFacingDot: -0.3
   consumeBatInputOnParry: 1
@@ -5405,6 +5407,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   health: 0
   maxHealth: 500
+  deathVFX: {fileID: 0}
   collisionGracePeriod: 0.2
   invulnerabilityTime: 1
 --- !u!114 &1793468654
@@ -6028,7 +6031,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1911149836}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: CameraHolder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6251,7 +6254,7 @@ GameObject:
   - component: {fileID: 1955477089}
   - component: {fileID: 1955477088}
   - component: {fileID: 1955477087}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
