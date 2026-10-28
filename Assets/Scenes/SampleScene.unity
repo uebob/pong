@@ -2999,7 +2999,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FloorBuilder
   library: {fileID: 11400000, guid: dcf69c2eebc6f4e48910c5af58160512, type: 2}
-  roomSize: 95
+  roomSize: 96
 --- !u!4 &552946667
 Transform:
   m_ObjectHideFlags: 0
@@ -5138,6 +5138,7 @@ MonoBehaviour:
   wallJumpHeight: 2.5
   wallJumpControlLock: 0.2
   wallJumpRefillsJumps: 1
+  wallJumpMomentumKeep: 1
   minSlideAngle: 15
   slideMinEntrySpeed: 10
   slideEntrySpeedMultiplier: 1.5
@@ -6294,6 +6295,9 @@ MonoBehaviour:
   sensitivityRange: {x: 0.1, y: 10}
   invertY: 0
   maxPitch: 100
+  movement: {fileID: 0}
+  wallTiltAngle: 10
+  tiltSmoothTime: 0.05
 --- !u!114 &1955477088
 MonoBehaviour:
   m_ObjectHideFlags: 0

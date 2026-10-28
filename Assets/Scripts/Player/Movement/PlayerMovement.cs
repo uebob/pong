@@ -68,6 +68,8 @@ public class PlayerMovement : MonoBehaviour
     public float wallJumpHeight = 1.6f;
     public float wallJumpControlLock = 0.2f;        // tiempo sin control aéreo tras un walljump
     public bool wallJumpRefillsJumps = true;
+    [Tooltip("Fracción de la velocidad paralela a la pared que se conserva al hacer walljump (1 = toda).")]
+    [Range(0f, 1f)] public float wallJumpMomentumKeep = 1f;
 
     [Header("Slide en rampas (tras ground pound)")]
     [Tooltip("Inclinación mínima (grados) para considerar el suelo una rampa.")]
@@ -111,6 +113,7 @@ public class PlayerMovement : MonoBehaviour
     public event System.Action GroundPoundLanded;
 
     public State CurrentState => state;
+    public Vector3 WallNormal => wallNormal;
 
     /// <summary>
     /// Cancela el batjump del clic actual porque otro sistema (p. ej. el parry) ya lo ha usado.
@@ -353,7 +356,7 @@ public class PlayerMovement : MonoBehaviour
         AirMove();
     }
 
-    void AirMove()
+    void AirMove(bool decayExcess = true)
     {
         Vector3 flat = FlatVelocity();
         float speedCap = MoveSpeed;
@@ -369,7 +372,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Sin momentum conservado, el exceso de velocidad se disipa poco a poco.
-        if (!preserveMomentum)
+        if (!preserveMomentum && decayExcess)
         {
             float s = flat.magnitude;
             if (s > speedCap)
@@ -487,7 +490,7 @@ public class PlayerMovement : MonoBehaviour
     void TickDashing()
     {
         if (isGrounded) RefreshGroundResources(); // aterrizar durante el dash devuelve saltos
-
+         if (poundQueued && !isGrounded) { ChangeState(State.GroundPound); return; }
         // Saltar durante el dash: se conserva la velocidad del dash y se desactiva el recorte en el aire
         if (JumpPressed && jumpsRemaining > 0)
         {
@@ -535,7 +538,8 @@ public class PlayerMovement : MonoBehaviour
             ChangeState(State.Grounded);
             return;
         }
-
+    
+        if (TryStartDash()) return;
         // Cancela la velocidad horizontal de forma progresiva y cae a velocidad constante
         Vector3 flat = Vector3.MoveTowards(FlatVelocity(), Vector3.zero, groundPoundHorizontalBrake * Time.fixedDeltaTime);
         rb.linearVelocity = new Vector3(flat.x, -groundPoundSpeed, flat.z);
@@ -612,10 +616,16 @@ public class PlayerMovement : MonoBehaviour
 
     void WallJump()
     {
-        Vector3 vel = wallNormal * wallJumpHorizontalSpeed;
+        // Normal horizontal de la pared
+        Vector3 n = new Vector3(wallNormal.x, 0f, wallNormal.z).normalized;
+
+        // Velocidad horizontal paralela a la pared (la que traías del dash) + empuje perpendicular
+        Vector3 along = Vector3.ProjectOnPlane(FlatVelocity(), n) * wallJumpMomentumKeep;
+        Vector3 vel = along + n * wallJumpHorizontalSpeed;
         vel.y = Mathf.Sqrt(2f * Mathf.Abs(Physics.gravity.y) * wallJumpHeight);
         rb.linearVelocity = vel;
 
+        preserveMomentum = true; // que el aire no recorte la velocidad conservada
         lastJumpTime = lastWallJumpTime = Time.time;
         airControlLockedUntil = Time.time + wallJumpControlLock;
         jumpBufferedUntil = 0f;

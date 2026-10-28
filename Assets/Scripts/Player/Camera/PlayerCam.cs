@@ -29,10 +29,19 @@ public class PlayerCam : MonoBehaviour
     [Header("Límites")]
     [Range(45f, 100f)] public float maxPitch = 100f;
 
+    [Header("Wall Cling")]
+    public PlayerMovement movement;           // si está vacío se busca en el padre
+    public float wallTiltAngle = 12f;
+    public float tiltSmoothTime = 0.08f;
+
+    private float roll, rollVelocity;
+
     private float pitch;
 
     private void Start()
     {
+        if (movement == null) movement = GetComponentInParent<PlayerMovement>();
+
         if (playerBody == null)
             Debug.LogWarning("PlayerCam: falta asignar playerBody, la cámara no podrá girar en horizontal.", this);
 
@@ -68,7 +77,17 @@ public class PlayerCam : MonoBehaviour
 
         pitch += invertY ? mouseY : -mouseY;
         pitch = Mathf.Clamp(pitch, -maxPitch, maxPitch);
-        transform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+        
+        float targetRoll = 0f;
+        if (movement != null && movement.CurrentState == PlayerMovement.State.WallCling && playerBody != null)
+        {
+            // Pared a la derecha => la normal apunta a la izquierda => dot < 0 => roll positivo (la cámara se inclina hacia fuera de la pared)
+            float side = -Vector3.Dot(movement.WallNormal, playerBody.right);
+            targetRoll = Mathf.Clamp(side, -1f, 1f) * wallTiltAngle;
+        }
+        roll = Mathf.SmoothDampAngle(roll, targetRoll, ref rollVelocity, tiltSmoothTime);
+
+        transform.localRotation = Quaternion.Euler(pitch, 0f, roll);
 
         if (playerBody != null)
             playerBody.Rotate(Vector3.up * mouseX);
